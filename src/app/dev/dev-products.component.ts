@@ -2,6 +2,9 @@ import { Component, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface Product {
   id: number;
@@ -19,86 +22,105 @@ interface Paginated<T> {
 @Component({
   standalone: true,
   selector: 'app-dev-products',
-  imports: [JsonPipe, FormsModule, RouterLink],
+  imports: [JsonPipe, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule],
   template: `
-    <section class="mx-auto max-w-4xl px-4 py-10">
-      <nav class="mb-4 flex gap-3 text-sm">
-        <button type="button" routerLink="/dev" class="text-blue-600 hover:underline">
-          ← Dev index
-        </button>
-        <button type="button" routerLink="/" class="text-blue-600 hover:underline">Accueil</button>
-        <button
-          type="button"
-          routerLink="/dev/products/1/rating"
-          class="text-blue-600 hover:underline"
+    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
+      <div class="mx-auto flex max-w-4xl flex-col gap-6">
+        <div
+          class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
         >
-          Voir rating #1
-        </button>
-      </nav>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
+                Development
+              </p>
+              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Products API</h1>
+              <p class="mt-1 text-sm text-slate-600">GET /api/products/</p>
+            </div>
 
-      <h2 class="text-2xl font-semibold">GET /api/products/</h2>
+            <button
+              mat-stroked-button
+              color="primary"
+              routerLink="/dev"
+              class="!border-sky-500 !bg-white !text-sky-700 shadow-sm hover:!bg-sky-50"
+            >
+              Dev Index
+            </button>
+          </div>
 
-      <form
-        class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-6"
-        (submit)="$event.preventDefault(); load()"
-      >
-        <label class="text-sm"
-          >page
-          <input
-            class="mt-1 w-full rounded border px-2 py-1"
-            type="number"
-            [(ngModel)]="page"
-            name="page"
-          />
-        </label>
-        <label class="text-sm"
-          >page_size
-          <input
-            class="mt-1 w-full rounded border px-2 py-1"
-            type="number"
-            [(ngModel)]="pageSize"
-            name="pageSize"
-          />
-        </label>
-        <label class="text-sm"
-          >min_rating
-          <input
-            class="mt-1 w-full rounded border px-2 py-1"
-            type="number"
-            step="0.1"
-            [(ngModel)]="minRating"
-            name="minRating"
-          />
-        </label>
-        <label class="text-sm md:col-span-2"
-          >ordering
-          <input
-            class="mt-1 w-full rounded border px-2 py-1"
-            type="text"
-            [(ngModel)]="ordering"
-            name="ordering"
-            placeholder="-created_at|price|name"
-          />
-        </label>
-        <div class="flex items-end">
-          <button
-            class="rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
-            (click)="load()"
+          <form
+            class="grid grid-cols-2 gap-3 md:grid-cols-6"
+            (submit)="$event.preventDefault(); load()"
           >
-            Fetch
-          </button>
+            <label class="text-sm"
+              >page
+              <input
+                class="mt-1 w-full rounded border px-2 py-1"
+                type="number"
+                [(ngModel)]="page"
+                name="page"
+              />
+            </label>
+            <label class="text-sm"
+              >page_size
+              <input
+                class="mt-1 w-full rounded border px-2 py-1"
+                type="number"
+                [(ngModel)]="pageSize"
+                name="pageSize"
+              />
+            </label>
+            <label class="text-sm"
+              >min_rating
+              <input
+                class="mt-1 w-full rounded border px-2 py-1"
+                type="number"
+                step="0.1"
+                [(ngModel)]="minRating"
+                name="minRating"
+              />
+            </label>
+            <label class="text-sm md:col-span-2"
+              >ordering
+              <input
+                class="mt-1 w-full rounded border px-2 py-1"
+                type="text"
+                [(ngModel)]="ordering"
+                name="ordering"
+                placeholder="-created_at|price|name"
+              />
+            </label>
+            <div class="flex items-end">
+              <button mat-raised-button color="primary" (click)="load()">Fetch</button>
+            </div>
+          </form>
         </div>
-      </form>
 
-      @if (resp(); as r) {
-        <div class="mt-4 text-sm text-gray-600">count: {{ r.count }}</div>
-        <pre class="mt-2 rounded bg-gray-50 p-3 text-sm overflow-auto">{{ r | json }}</pre>
-      }
-      @if (err()) {
-        <p class="mt-2 text-sm text-red-600">{{ err() }}</p>
-      }
-    </section>
+        @if (resp(); as r) {
+          <div
+            class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
+          >
+            <h3 class="font-semibold text-slate-900">Response (count: {{ r.count }})</h3>
+            <pre class="mt-3 rounded bg-slate-50 p-3 text-sm overflow-auto">{{ r | json }}</pre>
+          </div>
+        }
+        @if (err()) {
+          <div
+            class="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 shadow-sm"
+          >
+            {{ err() }}
+          </div>
+        }
+      </div>
+    </div>
   `,
+  styles: [
+    `
+      .containerbg {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
+      }
+    `,
+  ],
 })
 export class DevProductsComponent {
   page = 1;

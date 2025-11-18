@@ -2,6 +2,9 @@ import { JsonPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface RatingResponse {
   product_id: number;
@@ -12,47 +15,69 @@ interface RatingResponse {
 @Component({
   standalone: true,
   selector: 'app-dev-product-rating',
-  imports: [FormsModule, RouterLink, JsonPipe],
+  imports: [FormsModule, RouterLink, JsonPipe, MatButtonModule, MatFormFieldModule, MatInputModule],
   template: `
-    <section class="mx-auto max-w-3xl px-4 py-10">
-      <nav class="mb-4 flex gap-3 text-sm">
-        <button type="button" routerLink="/dev" class="text-blue-600 hover:underline">
-          ← Dev index
-        </button>
-        <button type="button" routerLink="/" class="text-blue-600 hover:underline">Accueil</button>
-        <button type="button" routerLink="/dev/products" class="text-blue-600 hover:underline">
-          Liste produits
-        </button>
-      </nav>
-
-      <h2 class="text-2xl font-semibold">GET /api/products/:id/rating/</h2>
-
-      <form class="mt-4 flex items-end gap-3" (submit)="$event.preventDefault(); load()">
-        <label class="text-sm"
-          >product id
-          <input
-            class="mt-1 w-28 rounded border px-2 py-1"
-            type="number"
-            [(ngModel)]="id"
-            name="id"
-          />
-        </label>
-        <button
-          class="rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
-          (click)="load()"
+    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
+      <div class="mx-auto flex max-w-3xl flex-col gap-6">
+        <div
+          class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
         >
-          Fetch
-        </button>
-      </form>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
+                Development
+              </p>
+              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Product Rating</h1>
+              <p class="mt-1 text-sm text-slate-600">GET /api/products/:id/rating/</p>
+            </div>
 
-      @if (resp(); as r) {
-        <pre class="mt-4 rounded bg-gray-50 p-3 text-sm">{{ r | json }}</pre>
-      }
-      @if (err()) {
-        <p class="mt-2 text-sm text-red-600">{{ err() }}</p>
-      }
-    </section>
+            <button
+              mat-stroked-button
+              color="primary"
+              routerLink="/dev"
+              class="!border-sky-500 !bg-white !text-sky-700 shadow-sm hover:!bg-sky-50"
+            >
+              Dev Index
+            </button>
+          </div>
+
+          <form
+            class="flex flex-col gap-3 sm:flex-row sm:items-end"
+            (submit)="$event.preventDefault(); load()"
+          >
+            <mat-form-field appearance="outline" class="flex-1 min-w-32">
+              <mat-label>Product ID</mat-label>
+              <input matInput type="number" [(ngModel)]="id" name="id" />
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="load()">Fetch</button>
+          </form>
+        </div>
+
+        @if (resp(); as r) {
+          <div
+            class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
+          >
+            <h3 class="font-semibold text-slate-900">Rating Response</h3>
+            <pre class="mt-3 rounded bg-slate-50 p-3 text-sm overflow-auto">{{ r | json }}</pre>
+          </div>
+        }
+        @if (err()) {
+          <div
+            class="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 shadow-sm"
+          >
+            {{ err() }}
+          </div>
+        }
+      </div>
+    </div>
   `,
+  styles: [
+    `
+      .containerbg {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
+      }
+    `,
+  ],
 })
 export class DevProductRatingComponent {
   id = 1;

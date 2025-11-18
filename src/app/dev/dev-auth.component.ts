@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 
 interface TokenResponse {
   access: string;
@@ -13,45 +14,71 @@ interface RefreshResponse {
 @Component({
   standalone: true,
   selector: 'app-dev-auth',
-  imports: [JsonPipe, RouterLink],
+  imports: [JsonPipe, RouterLink, MatButtonModule],
   template: `
-    <section class="mx-auto max-w-3xl px-4 py-10">
-      <nav class="mb-4 flex gap-3 text-sm">
-        <button type="button" routerLink="/dev" class="text-blue-600 hover:underline">
-          ← Dev index
-        </button>
-        <button type="button" routerLink="/" class="text-blue-600 hover:underline">Accueil</button>
-      </nav>
+    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
+      <div class="mx-auto flex max-w-3xl flex-col gap-6">
+        <div
+          class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
+        >
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
+                Development
+              </p>
+              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Authentication</h1>
+              <p class="mt-1 text-sm text-slate-600">/api/auth/token/ & /api/auth/token/refresh/</p>
+            </div>
 
-      <h2 class="text-2xl font-semibold">/api/auth/token/ & /api/auth/token/refresh/</h2>
-      <div class="mt-4 flex gap-3">
-        <button
-          class="rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
-          (click)="login()"
-        >
-          POST token
-        </button>
-        <button
-          class="rounded-lg bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700"
-          (click)="refresh()"
-        >
-          POST refresh
-        </button>
+            <button
+              mat-stroked-button
+              color="primary"
+              routerLink="/dev"
+              class="!border-sky-500 !bg-white !text-sky-700 shadow-sm hover:!bg-sky-50"
+            >
+              Dev Index
+            </button>
+          </div>
+
+          <div class="p-4 flex gap-3">
+            <button mat-raised-button color="primary" (click)="login()">POST token</button>
+            <button mat-raised-button color="primary" (click)="refresh()">POST refresh</button>
+          </div>
+        </div>
+
+        @if (loginResp(); as r) {
+          <div
+            class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
+          >
+            <h3 class="font-semibold text-slate-900">Login response</h3>
+            <pre class="mt-3 rounded bg-slate-50 p-3 text-sm overflow-auto">{{ r | json }}</pre>
+          </div>
+        }
+        @if (refreshResp(); as rr) {
+          <div
+            class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
+          >
+            <h3 class="font-semibold text-slate-900">Refresh response</h3>
+            <pre class="mt-3 rounded bg-slate-50 p-3 text-sm overflow-auto">{{ rr | json }}</pre>
+          </div>
+        }
+        @if (err()) {
+          <div
+            class="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 shadow-sm"
+          >
+            {{ err() }}
+          </div>
+        }
       </div>
-
-      @if (loginResp(); as r) {
-        <h3 class="mt-4 font-medium">Login response</h3>
-        <pre class="rounded bg-gray-50 p-3 text-sm">{{ r | json }}</pre>
-      }
-      @if (refreshResp(); as rr) {
-        <h3 class="mt-4 font-medium">Refresh response</h3>
-        <pre class="rounded bg-gray-50 p-3 text-sm">{{ rr | json }}</pre>
-      }
-      @if (err()) {
-        <p class="mt-2 text-sm text-red-600">{{ err() }}</p>
-      }
-    </section>
+    </div>
   `,
+  styles: [
+    `
+      .containerbg {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
+      }
+    `,
+  ],
 })
 export class DevAuthComponent {
   readonly loginResp = signal<TokenResponse | null>(null);

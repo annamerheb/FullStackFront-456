@@ -1,59 +1,145 @@
-# MyShop
+# My Shop — Angular Frontend (FullStackFront-456)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
+A compact, opinionated Angular frontend demo built with Angular + NgRx + Angular Material using static mock data. This repository implements a simple e‑commerce UI with Login, Product listing and Product rating pages. It is intended as a learning/sample project and for UI evaluations.
 
-## Development server
+---
 
-To start a local development server, run:
+**Quick overview**
 
-```bash
-ng serve
+- Framework: Angular (standalone components pattern used across the app)
+- State: NgRx (actions / reducers / selectors / effects)
+- UI: Angular Material + small utility CSS
+- Mocking: static mock data in `src/mocks` (and an MSW mock service worker is included)
+
+---
+
+## Features
+
+- Login flow (demo credentials) with redirect to the app hub
+- Products listing with paging / min-rating filter / sorting
+- Product rating lookup by ID
+- Consistent, modern blue/white Material-themed UI
+- Small skeleton loader component for async loading states
+
+---
+
+## Prerequisites
+
+- Node.js 18+ (or compatible LTS)
+- npm 8+ (or yarn/pnpm if you prefer — adapt commands accordingly)
+- (optional) Angular CLI for local ng commands: `npm i -g @angular/cli`
+
+---
+
+## Install
+
+From the repository root:
+
+```powershell
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Run (development)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Start the app in development mode (the workspace includes an npm `start` task):
 
-```bash
-ng generate component component-name
+```powershell
+npx ng serve --open
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- The app should be available at `http://localhost:4200` by default. Visit `/login` to sign in (demo/demo).
 
-```bash
-ng generate --help
+---
+
+## Available scripts
+
+(If you use npm scripts included in `package.json`)
+
+- `npx ng serve` — start dev server
+- `npm run build` — produce a production build
+- `npm test` — run tests (if configured)
+- `npm run storybook` — run Storybook (if present in the repo)
+
+Run `npm run` to list available scripts in your local `package.json`.
+
+---
+
+## Project structure (high level)
+
+```
+src/
+├─ app/
+│  ├─ app.ts                  # app bootstrap / root component
+│  ├─ app.routes.ts          # routes for pages
+│  ├─ pages/                 # main page components (login, products, rating)
+│  ├─ components/            # small shared components (e.g., login-form, skeleton-loader)
+│  ├─ services/              # API / shop service (uses mock data)
+│  └─ state/                 # NgRx actions/reducers/selectors/effects
+├─ mocks/                    # static mock data and MSW handlers
+└─ main.ts
 ```
 
-## Building
+Files and folders may be slightly different in your copy; this shows the main areas to check when editing features.
 
-To build the project run:
+---
 
-```bash
-ng build
-```
+## Important files (where to look)
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- `src/mocks/data.ts` — sample product data (IDs 1–20) and ratings
+- `src/mocks/handlers.ts` — MSW handlers (if MSW is enabled)
+- `src/app/state/auth/*` — auth actions, effects and selectors
+- `src/app/state/products/*` — product actions, effects and selectors
+- `src/app/pages/*` — UI pages that render the main flows
+- `src/app/components/*` — shared UI components used by pages
 
-## Running unit tests
+---
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## How the app works (flow)
 
-```bash
-ng test
-```
+1. User opens `/login` and submits credentials
+2. `AuthActions.login` is dispatched and handled by an effect
+3. The effect returns mocked success/failure and updates the store
+4. Components select `selectAuthLoading`, `selectAuthError`, `selectIsAuthenticated` to update the UI
+5. The products page fetches products via `ProductsActions.loadProducts` using filters from a reactive form
+6. Ratings page dispatches `ProductsActions.loadRating` by product id
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## Styling & Theming
 
-```bash
-ng e2e
-```
+- The UI uses Angular Material components for consistent controls and spacing. Components include local inline styles to keep each page visually consistent with the blue/white theme.
+- If you want a global theme adjustment, update Material theme variables or add global CSS in `styles.css`.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+---
 
-## Additional Resources
+## Mocking & Development notes
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- The project includes a Service Worker mock (`mockServiceWorker.js`) and MSW handlers under `src/mocks`. To toggle MSW, check the `environments` entries (see `src/environments/environment.ts`).
+- Because the project uses static mock data, the app works offline and does not require a backend to evaluate UI and state flows.
+
+---
+
+## Tests & Storybook
+
+- There may be unit tests and Storybook stories included. Run `npm test` or `npm run storybook` if they exist in `package.json`.
+
+---
+
+## Troubleshooting
+
+- If you see template compilation errors after editing components, ensure you removed any non-Angular template syntax (this repo previously contained Razor-style `@if`/`@for` fragments which will not compile in Angular).
+- If a Material module is missing, add it to the component `imports` array (standalone components) or to a Material module that you import in the app.
+- If `@angular/forms` import errors appear, ensure `@angular/forms` is installed and that your TypeScript/Angular versions match the project (run `npm install` again).
+
+---
+
+## Contribution & Next steps
+
+- For UI tweaks, edit the standalone component files in `src/app/pages` and `src/app/components`.
+- For state changes, update `src/app/state/*` (actions → effects → reducers → selectors).
+- If you'd like, I can:
+  - run a build and fix any remaining template/import errors,
+  - add a small CONTRIBUTING.md describing branch/PR workflow,
+  - or extract shared styles to a global theme file.
