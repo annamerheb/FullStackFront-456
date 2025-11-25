@@ -15,35 +15,6 @@ import { Observable } from 'rxjs';
   imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule],
   template: `
     <div class="app-shell">
-      <header class="top-nav">
-        <div class="nav-left">
-          <mat-icon class="brand-icon">storefront</mat-icon>
-          <span class="brand-name">My Shop</span>
-        </div>
-
-        <nav class="nav-links">
-          <a mat-button routerLink="/">Home</a>
-          <a mat-button routerLink="/shop/products">Products</a>
-          <a mat-button routerLink="/shop/rating">Ratings</a>
-          <a mat-button routerLink="/dev">Dev Pages</a>
-        </nav>
-
-        <div class="nav-right" *ngIf="isAuthenticated$ | async; else navLoggedOut">
-          <button mat-icon-button class="avatar-btn" aria-label="User profile">
-            <mat-icon>account_circle</mat-icon>
-          </button>
-          <button mat-stroked-button color="warn" class="logout-btn" (click)="logout()">
-            Logout
-          </button>
-        </div>
-
-        <ng-template #navLoggedOut>
-          <div class="nav-right">
-            <button mat-raised-button color="primary" routerLink="/login">Sign In</button>
-          </div>
-        </ng-template>
-      </header>
-
       <main class="content">
         <section class="hero">
           <div class="hero-inner">
@@ -92,63 +63,6 @@ import { Observable } from 'rxjs';
         display: flex;
         flex-direction: column;
         background: radial-gradient(circle at top left, #439cf5 0, #b6dcff 40%, #62adf2 100%);
-      }
-
-      .top-nav {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 12px 32px;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .nav-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .brand-icon {
-        font-size: 26px;
-        color: #1976d2;
-      }
-
-      .brand-name {
-        font-weight: 600;
-        font-size: 18px;
-        letter-spacing: 0.04em;
-        color: #202124;
-      }
-
-      .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1;
-        justify-content: center;
-      }
-
-      .nav-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .avatar-btn mat-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-        color: #1976d2;
-      }
-
-      .logout-btn {
-        text-transform: none;
       }
 
       .content {

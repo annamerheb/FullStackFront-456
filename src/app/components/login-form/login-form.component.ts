@@ -1,17 +1,18 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   standalone: true,
   selector: 'app-login-form',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
   template: `
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="form-root">
       <div class="field">
         <label for="username" class="label">Username</label>
         <div class="input-wrapper">
-          <span class="icon">👤</span>
+          <mat-icon class="icon">person</mat-icon>
           <input
             id="username"
             type="text"
@@ -31,7 +32,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
       <div class="field">
         <label for="password" class="label">Password</label>
         <div class="input-wrapper">
-          <span class="icon">🔒</span>
+          <mat-icon class="icon">lock</mat-icon>
           <input
             id="password"
             type="password"
@@ -99,24 +100,23 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 
       .input {
         width: 100%;
-        padding: 10px 12px 10px 36px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        background: linear-gradient(145deg, #ffffff, #f3f4f6);
-        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+        padding: 12px 12px 12px 36px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: white;
         font-size: 14px;
         transition: all 0.2s ease;
         outline: none;
       }
 
       .input:focus {
-        border-color: #2684db;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
       }
 
       .input:disabled {
-        background: #f3f4f6;
-        color: #9ca3af;
+        background: #f8fafc;
+        color: #cbd5e1;
       }
 
       .error-msg {

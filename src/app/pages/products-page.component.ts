@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
@@ -9,21 +9,29 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
 import * as ProductsActions from '../state/products/products.actions';
 import {
   selectAllProducts,
   selectProductsLoading,
   selectProductsError,
+  selectProductsCount,
 } from '../state/products/products.selectors';
-import { Observable } from 'rxjs';
+import * as WishlistActions from '../state/wishlist/wishlist.actions';
+import { selectIsInWishlist, selectWishlistItems } from '../state/wishlist/wishlist.selectors';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 export interface Product {
   id: number;
   name: string;
   price: number;
   created_at: string;
+  image: string;
   avgRating: number;
+  stock: number;
+  discount?: number;
 }
 
 @Component({
@@ -40,150 +48,189 @@ export interface Product {
     MatButtonModule,
     MatCardModule,
     MatProgressSpinnerModule,
+    MatIconModule,
   ],
   template: `
-    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
-      <div class="mx-auto flex max-w-6xl flex-col gap-6">
-        <div
-          class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
-        >
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
-                Catalogue
-              </p>
-              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Shop Products</h1>
-              <p class="mt-1 text-sm text-slate-600">
-                Fine-tune your view by page, rating and ordering.
-              </p>
-            </div>
-
-            <button
-              mat-stroked-button
-              color="primary"
-              routerLink="/app"
-              class="!border-sky-500 !bg-white !text-sky-700 shadow-sm hover:!bg-sky-50"
-            >
-              ← Back to dashboard
-            </button>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white px-4 py-12">
+      <div class="mx-auto max-w-7xl">
+        <!-- Header Section -->
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider text-sky-600">Products</p>
+            <h1 class="mt-2 text-4xl font-bold text-slate-900">Shop Collection</h1>
+            <p class="mt-2 text-slate-600">Discover our curated selection of products</p>
           </div>
-
-          <div class="p-4">
-            <form
-              [formGroup]="filterForm"
-              (ngSubmit)="applyFilters()"
-              class="mt-4 grid gap-3 md:grid-cols-4"
-            >
-              <mat-form-field appearance="fill" class="w-full text-sm">
-                <mat-label>Page</mat-label>
-                <input
-                  matInput
-                  type="text"
-                  inputmode="numeric"
-                  formControlName="page"
-                  class="text-sm"
-                />
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full text-sm">
-                <mat-label>Page Size</mat-label>
-                <input
-                  matInput
-                  type="text"
-                  inputmode="numeric"
-                  formControlName="pageSize"
-                  class="text-sm"
-                />
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full text-sm">
-                <mat-label>Min Rating</mat-label>
-                <input
-                  matInput
-                  type="text"
-                  inputmode="decimal"
-                  formControlName="minRating"
-                  class="text-sm"
-                />
-              </mat-form-field>
-
-              <div class="flex flex-col gap-3 md:flex-row md:items-end">
-                <mat-form-field appearance="fill" class="w-full text-sm">
-                  <mat-label>Sort By</mat-label>
-                  <mat-select formControlName="ordering">
-                    <mat-option value="">Default</mat-option>
-                    <mat-option value="price">Price (Low to High)</mat-option>
-                    <mat-option value="-price">Price (High to Low)</mat-option>
-                    <mat-option value="name">Name (A–Z)</mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <button
-                  mat-raised-button
-                  color="primary"
-                  type="submit"
-                  class="h-11 w-full md:w-auto"
-                >
-                  Apply
-                </button>
-              </div>
-            </form>
-          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            routerLink="/app"
+            class="w-full sm:w-auto"
+          >
+            ← Back to Dashboard
+          </button>
         </div>
 
-        <div *ngIf="loading$ | async" class="flex justify-center py-10">
+        <!-- Filters Card -->
+        <div class="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">
+            Filters & Sort
+          </h3>
+          <form
+            [formGroup]="filterForm"
+            (ngSubmit)="applyFilters()"
+            class="grid gap-4 md:grid-cols-4"
+          >
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Items per Page</mat-label>
+              <mat-select formControlName="pageSize">
+                <mat-option value="6">6 items</mat-option>
+                <mat-option value="12">12 items</mat-option>
+                <mat-option value="24">24 items</mat-option>
+                <mat-option value="48">48 items</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Min Rating</mat-label>
+              <input
+                matInput
+                type="text"
+                inputmode="decimal"
+                formControlName="minRating"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Sort By</mat-label>
+              <mat-select formControlName="ordering">
+                <mat-option value="">Default</mat-option>
+                <mat-option value="price">Price: Low to High</mat-option>
+                <mat-option value="-price">Price: High to Low</mat-option>
+                <mat-option value="name">Name: A–Z</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="h-11 w-full"
+            >
+              Apply Filters
+            </button>
+          </form>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading$ | async" class="flex justify-center py-20">
           <mat-spinner diameter="40"></mat-spinner>
         </div>
 
+        <!-- Error State -->
         <div
           *ngIf="error$ | async as error"
-          class="rounded-xl border border-red-200 bg-red-50/80 px-4 py-3 text-sm text-red-700 shadow-sm"
+          class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
-          {{ error }}
+          ⚠️ {{ error }}
         </div>
 
-        <div *ngIf="products$ | async as products" class="space-y-4">
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" *ngIf="(products?.length ?? 0) > 0">
-            <mat-card *ngFor="let product of products" class="group product-card">
-              <mat-card-content class="pt-4 pb-5">
-                <div class="flex items-start justify-between gap-3">
-                  <h2
-                    class="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-sky-700"
-                  >
-                    {{ product.name }}
-                  </h2>
-
-                  <span
-                    class="inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700"
-                  >
-                    €{{ product.price | number: '1.2-2' }}
-                  </span>
-                </div>
-
-                <div class="mt-3 flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-amber-500">★</span>
-                    <span class="font-medium text-slate-800">
-                      {{ product.avgRating | number: '1.1-1' }}
-                    </span>
-                    <span class="text-slate-400">/ 5</span>
+        <!-- Products Grid -->
+        <div *ngIf="products$ | async as products">
+          <div
+            class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            *ngIf="(products?.length ?? 0) > 0"
+          >
+            <div
+              *ngFor="let product of products"
+              class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:border-sky-300 hover:shadow-lg"
+            >
+              <!-- Image Section -->
+              <div class="relative h-48 overflow-hidden bg-slate-100">
+                <img
+                  [src]="product.image"
+                  [alt]="product.name"
+                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <!-- Badges -->
+                <div class="absolute inset-0 flex flex-col gap-2 p-3">
+                  <div class="ml-auto flex flex-col gap-2">
+                    <div
+                      *ngIf="product.discount"
+                      class="w-fit rounded-lg bg-red-500 px-2 py-1 text-xs font-bold text-white"
+                    >
+                      -{{ product.discount }}% OFF
+                    </div>
+                    <div
+                      [ngClass]="{
+                        'bg-green-500': product.stock > 20,
+                        'bg-yellow-500': product.stock > 5 && product.stock <= 20,
+                        'bg-red-500': product.stock <= 5,
+                      }"
+                      class="w-fit rounded-lg px-2 py-1 text-xs font-semibold text-white"
+                    >
+                      {{ product.stock }} left
+                    </div>
                   </div>
-                  <span class="rounded-full bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
-                    {{ product.created_at | date: 'mediumDate' }}
+                </div>
+              </div>
+
+              <!-- Content Section -->
+              <div class="flex flex-1 flex-col p-4">
+                <!-- Title -->
+                <h3
+                  class="mb-2 line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-sky-600 transition"
+                >
+                  {{ product.name }}
+                </h3>
+
+                <!-- Rating -->
+                <div class="mb-3 flex items-center gap-1">
+                  <span class="text-amber-400 text-sm">★</span>
+                  <span class="text-xs font-semibold text-slate-700">
+                    {{ product.avgRating | number: '1.1-1' }}
                   </span>
+                  <span class="text-xs text-slate-500">({{ product.reviews_count }})</span>
                 </div>
 
-                <div
-                  class="mt-4 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"
-                ></div>
-
-                <div class="mt-3 flex items-center justify-between text-xs">
-                  <span class="text-slate-500">
-                    ID: <span class="font-medium text-slate-700">{{ product.id }}</span>
-                  </span>
+                <!-- Prices -->
+                <div class="mb-4 space-y-1">
+                  <div *ngIf="product.discount" class="flex items-center gap-2">
+                    <span class="text-xs line-through text-slate-500">
+                      {{ product.price | currency: 'EUR' }}
+                    </span>
+                    <span class="text-sm font-bold text-green-600">
+                      {{ getDiscountedPrice(product) | currency: 'EUR' }}
+                    </span>
+                  </div>
+                  <div *ngIf="!product.discount" class="text-sm font-bold text-slate-900">
+                    {{ product.price | currency: 'EUR' }}
+                  </div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+
+                <!-- Actions -->
+                <div class="mt-auto flex gap-2">
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    [routerLink]="['/shop/products', product.id]"
+                    class="flex-1 !h-9 !text-xs !font-semibold !rounded-lg"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    mat-icon-button
+                    (click)="toggleWishlist(product)"
+                    [class.text-red-500]="selectIsInWishlist(product.id) | async"
+                    class="text-slate-400 transition hover:text-red-500"
+                  >
+                    <mat-icon class="text-lg">{{
+                      (selectIsInWishlist(product.id) | async) ? 'favorite' : 'favorite_border'
+                    }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div
@@ -193,12 +240,22 @@ export interface Product {
             <div
               class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-sky-50 text-sky-500"
             >
-              🛒
+              <mat-icon>shopping_cart</mat-icon>
             </div>
             <p class="text-sm font-medium">No products found</p>
             <p class="mt-1 text-xs text-slate-400">
               Try adjusting your filters or reset the page &amp; rating.
             </p>
+          </div>
+
+          <div *ngIf="(products?.length ?? 0) > 0" class="flex justify-center py-4">
+            <mat-paginator
+              [length]="totalProducts"
+              [pageSize]="pageSize"
+              [pageSizeOptions]="[6, 12, 24, 48]"
+              (page)="onPageChange($event)"
+              showFirstLastButtons
+            ></mat-paginator>
           </div>
         </div>
       </div>
@@ -253,18 +310,23 @@ export interface Product {
     `,
   ],
 })
-export class ProductsPageComponent implements OnInit {
+export class ProductsPageComponent implements OnInit, OnDestroy {
   filterForm: FormGroup;
   products$: Observable<Product[]>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
+  totalProducts$: Observable<number>;
+  totalProducts = 0;
+  pageSize = 6;
+  currentPage = 0;
+  private destroy$ = new Subject<void>();
+  wishlistItems: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private store: Store,
   ) {
     this.filterForm = this.fb.group({
-      page: [0],
       pageSize: [6],
       minRating: [0],
       ordering: [''],
@@ -273,19 +335,77 @@ export class ProductsPageComponent implements OnInit {
     this.products$ = this.store.select(selectAllProducts);
     this.loading$ = this.store.select(selectProductsLoading);
     this.error$ = this.store.select(selectProductsError);
+    this.totalProducts$ = this.store.select(selectProductsCount);
+    this.totalProducts$.pipe(takeUntil(this.destroy$)).subscribe((count) => {
+      this.totalProducts = count;
+    });
+
+    // Subscribe to wishlist items to keep track
+    this.store
+      .select(selectWishlistItems)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((items: any) => {
+        this.wishlistItems = items;
+      });
   }
 
   ngOnInit(): void {
     this.applyFilters();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   applyFilters(): void {
-    const page = Number(this.filterForm.get('page')?.value) || 0;
+    this.currentPage = 0;
+    this.loadProducts();
+  }
+
+  onPageChange(event: any): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.filterForm.patchValue({ pageSize: event.pageSize });
+    this.loadProducts();
+  }
+
+  selectIsInWishlist(productId: number): Observable<boolean> {
+    return this.store.select(selectIsInWishlist(productId));
+  }
+
+  toggleWishlist(product: Product): void {
+    const isInWishlist = this.wishlistItems.some((item) => item.id === product.id);
+
+    if (isInWishlist) {
+      this.store.dispatch(WishlistActions.removeFromWishlist({ productId: product.id }));
+    } else {
+      this.store.dispatch(
+        WishlistActions.addToWishlist({
+          product: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+          },
+        }),
+      );
+    }
+  }
+
+  getDiscountedPrice(product: Product): number {
+    if (!product.discount) {
+      return product.price;
+    }
+    return product.price - (product.price * product.discount) / 100;
+  }
+
+  private loadProducts(): void {
     const pageSize = Number(this.filterForm.get('pageSize')?.value) || 6;
     const minRating = Number(this.filterForm.get('minRating')?.value) || 0;
 
     const filters = {
-      page,
+      page: this.currentPage,
       pageSize,
       minRating,
       ordering: this.filterForm.get('ordering')?.value || '',

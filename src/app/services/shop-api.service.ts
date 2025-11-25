@@ -6,15 +6,16 @@ import {
   AuthRefreshResponse,
   ProductsListResponse,
   ProductRatingResponse,
+  Product,
 } from './types';
 
 /**
  * ShopApiService
- * 
+ *
  * HTTP client for all API interactions with the backend.
- * 
- * Base URL: http://localhost:8000/api/
- * 
+ *
+ * Base URL: /api/
+ *
  * Endpoints:
  * - POST /api/auth/token/ - Login
  * - POST /api/auth/token/refresh/ - Refresh access token
@@ -25,17 +26,17 @@ import {
   providedIn: 'root',
 })
 export class ShopApiService {
-  private readonly baseUrl = 'http://localhost:8000/api';
+  private readonly baseUrl = '/api';
 
   constructor(private http: HttpClient) {}
 
   /**
    * Login with username and password
-   * 
+   *
    * @param username - User's username
    * @param password - User's password
    * @returns Observable of auth tokens (access + refresh)
-   * 
+   *
    * @example
    * this.shopApi.login('demo', 'demo').subscribe(tokens => {
    *   console.log('Access token:', tokens.access);
@@ -51,10 +52,10 @@ export class ShopApiService {
 
   /**
    * Refresh access token using refresh token
-   * 
+   *
    * @param refreshToken - Refresh token from login
    * @returns Observable of new access token
-   * 
+   *
    * @example
    * this.shopApi.refreshToken(refreshToken).subscribe(response => {
    *   console.log('New access token:', response.access);
@@ -69,14 +70,14 @@ export class ShopApiService {
 
   /**
    * Get list of products with optional filters
-   * 
+   *
    * @param filters - Optional filters for products
    * @param filters.page - Page number (0-indexed)
    * @param filters.pageSize - Products per page
    * @param filters.minRating - Minimum average rating
    * @param filters.ordering - Sort field: 'price', '-price', 'name', etc.
    * @returns Observable of products list
-   * 
+   *
    * @example
    * this.shopApi.getProducts({
    *   page: 0,
@@ -117,11 +118,28 @@ export class ShopApiService {
   }
 
   /**
+   * Get a specific product by ID
+   *
+   * @param productId - Product ID
+   * @returns Observable of product details
+   *
+   * @example
+   * this.shopApi.getProduct(1).subscribe(product => {
+   *   console.log('Product:', product.name);
+   * });
+   */
+  getProduct(productId: number): Observable<Product> {
+    const url = `${this.baseUrl}/products/${productId}/`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<Product>(url);
+  }
+
+  /**
    * Get rating for a specific product
-   * 
+   *
    * @param productId - Product ID
    * @returns Observable of product rating data
-   * 
+   *
    * @example
    * this.shopApi.getProductRating(1).subscribe(rating => {
    *   console.log('Average rating:', rating.avg_rating);

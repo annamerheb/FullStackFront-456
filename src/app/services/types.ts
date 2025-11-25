@@ -17,6 +17,9 @@ export interface Product {
   price: number;
   created_at: string;
   avgRating: number;
+  image: string;
+  stock: number;
+  discount?: number;
 }
 
 export interface ProductsListResponse {

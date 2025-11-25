@@ -11,24 +11,22 @@ export class AuthEffects {
     this.actions$.pipe(
       ofType(AuthActions.login),
       map(({ username, password }) => {
-        // Static mock login - accept any credentials
         return AuthActions.loginSuccess({
           access: 'mock-access-token-' + Date.now(),
           refresh: 'mock-refresh-token-' + Date.now(),
         });
-      })
-    )
+      }),
+    ),
   );
 
   refreshToken$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.refreshToken),
       map(({ refreshToken }) => {
-        // Static mock token refresh
         return AuthActions.refreshTokenSuccess({
           access: 'mock-access-token-refreshed-' + Date.now(),
         });
-      })
-    )
+      }),
+    ),
   );
 }

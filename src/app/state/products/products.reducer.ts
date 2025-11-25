@@ -30,8 +30,6 @@ const initialState: ProductsState = {
 
 export const productsReducer = createReducer(
   initialState,
-
-  // Load Products
   on(ProductsActions.loadProducts, (state, { filters }) => ({
     ...state,
     loading: true,
@@ -52,8 +50,6 @@ export const productsReducer = createReducer(
     loading: false,
     error,
   })),
-
-  // Load Rating
   on(ProductsActions.loadRating, (state) => ({
     ...state,
     ratingLoading: true,
@@ -71,5 +67,5 @@ export const productsReducer = createReducer(
     ...state,
     ratingLoading: false,
     ratingError: error,
-  }))
+  })),
 );

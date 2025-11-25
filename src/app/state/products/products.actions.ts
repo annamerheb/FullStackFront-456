@@ -12,35 +12,35 @@ export interface Product {
   name: string;
   price: number;
   created_at: string;
+  image: string;
   avgRating: number;
+  stock: number;
+  discount?: number;
 }
 
 export const loadProducts = createAction(
   '[Products] Load Products',
-  props<{ filters?: ProductsFilters }>()
+  props<{ filters?: ProductsFilters }>(),
 );
 
 export const loadProductsSuccess = createAction(
   '[Products] Load Products Success',
-  props<{ data: { count: number; results: Product[] } }>()
+  props<{ data: { count: number; results: Product[] } }>(),
 );
 
 export const loadProductsFailure = createAction(
   '[Products] Load Products Failure',
-  props<{ error: string }>()
+  props<{ error: string }>(),
 );
 
-export const loadRating = createAction(
-  '[Products] Load Rating',
-  props<{ productId: number }>()
-);
+export const loadRating = createAction('[Products] Load Rating', props<{ productId: number }>());
 
 export const loadRatingSuccess = createAction(
   '[Products] Load Rating Success',
-  props<{ data: { product_id: number; avg_rating: number; count: number } }>()
+  props<{ data: { product_id: number; avg_rating: number; count: number } }>(),
 );
 
 export const loadRatingFailure = createAction(
   '[Products] Load Rating Failure',
-  props<{ error: string }>()
+  props<{ error: string }>(),
 );

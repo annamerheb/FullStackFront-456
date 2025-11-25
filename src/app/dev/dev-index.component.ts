@@ -8,7 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-dev-index',
   imports: [RouterLink, MatButtonModule, MatIconModule],
   template: `
-    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
+    <div
+      class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10 !font-sans"
+    >
       <div class="mx-auto flex max-w-3xl flex-col gap-6">
         <div
           class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
@@ -48,7 +50,16 @@ import { MatIconModule } from '@angular/material/icon';
                 mat-stroked-button
                 class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
               >
-                <span class="font-medium">Products:</span>&nbsp;GET /api/products/
+                <span class="font-medium">Products List:</span>&nbsp;GET /api/products/
+              </button>
+              <button
+                type="button"
+                routerLink="/dev/products/1"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">Product Details:</span>&nbsp;GET /api/products/:id/ (with
+                stock & discount)
               </button>
               <button
                 type="button"
@@ -56,7 +67,25 @@ import { MatIconModule } from '@angular/material/icon';
                 mat-stroked-button
                 class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
               >
-                <span class="font-medium">Product rating:</span>&nbsp;GET /api/products/:id/rating/
+                <span class="font-medium">Product Rating:</span>&nbsp;GET /api/products/:id/rating/
+              </button>
+              <button
+                type="button"
+                routerLink="/dev/cart-validate"
+                mat-stroked-button
+                class="!justify-start !text-left !border-emerald-200 !text-slate-700 hover:!bg-emerald-50"
+              >
+                <span class="font-medium">Cart Validate:</span>&nbsp;POST /api/cart/validate/ (price
+                summary)
+              </button>
+              <button
+                type="button"
+                routerLink="/dev/order"
+                mat-stroked-button
+                class="!justify-start !text-left !border-amber-200 !text-slate-700 hover:!bg-amber-50"
+              >
+                <span class="font-medium">Create Order:</span>&nbsp;POST /api/order/ (confirmation
+                #)
               </button>
             </nav>
           </div>

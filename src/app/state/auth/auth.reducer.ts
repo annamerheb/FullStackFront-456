@@ -17,8 +17,6 @@ const initialState: AuthState = {
 
 export const authReducer = createReducer(
   initialState,
-  
-  // Login
   on(AuthActions.login, (state) => ({
     ...state,
     loading: true,
@@ -38,16 +36,12 @@ export const authReducer = createReducer(
     loading: false,
     error,
   })),
-
-  // Logout
   on(AuthActions.logout, (state) => ({
     ...state,
     access: null,
     refresh: null,
     error: null,
   })),
-
-  // Refresh Token
   on(AuthActions.refreshToken, (state) => ({
     ...state,
     loading: true,
@@ -65,5 +59,5 @@ export const authReducer = createReducer(
     ...state,
     loading: false,
     error,
-  }))
+  })),
 );

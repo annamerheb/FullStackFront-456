@@ -4,7 +4,37 @@ export interface Product {
   price: number;
   created_at: string;
   owner_id: number;
+  image: string;
   ratings: { user_id: number; value: number }[];
+  stock: number;
+  discount?: number;
+}
+
+const imageUrls = [
+  'https://dummyimage.com/400x400/3b82f6/ffffff?text=Stylo+Bleu',
+  'https://dummyimage.com/400x400/06b6d4/ffffff?text=Cahier+A5',
+  'https://dummyimage.com/400x400/ef4444/ffffff?text=Classeur+Rouge',
+  'https://dummyimage.com/400x400/f59e0b/ffffff?text=Crayon+HB',
+  'https://dummyimage.com/400x400/10b981/ffffff?text=Règle+30cm',
+  'https://dummyimage.com/400x400/8b5cf6/ffffff?text=Gomme+Blanche',
+  'https://dummyimage.com/400x400/ec4899/ffffff?text=Surligneur+Jaune',
+  'https://dummyimage.com/400x400/14b8a6/ffffff?text=Pochette+Plastique',
+  'https://dummyimage.com/400x400/f97316/ffffff?text=Feutre+Noir',
+  'https://dummyimage.com/400x400/06b6d4/ffffff?text=Bloc+Notes',
+  'https://dummyimage.com/400x400/3b82f6/ffffff?text=Feuilles+A4',
+  'https://dummyimage.com/400x400/1e40af/ffffff?text=Trousse+Bleue',
+  'https://dummyimage.com/400x400/ea580c/ffffff?text=Colle+Bâton',
+  'https://dummyimage.com/400x400/6366f1/ffffff?text=Ruban+Adhésif',
+  'https://dummyimage.com/400x400/dc2626/ffffff?text=Stylo+Rouge',
+  'https://dummyimage.com/400x400/7c3aed/ffffff?text=Feutres+Couleur',
+  'https://dummyimage.com/400x400/059669/ffffff?text=Pinceau+Fin',
+  'https://dummyimage.com/400x400/0891b2/ffffff?text=Palette+Aquarelle',
+  'https://dummyimage.com/400x400/d946ef/ffffff?text=Marqueur+Effaçable',
+  'https://dummyimage.com/400x400/65a30d/ffffff?text=Tampon+Encreur',
+];
+
+function getRandomImage(): string {
+  return imageUrls[Math.floor(Math.random() * imageUrls.length)];
 }
 
 export const products: Product[] = [
@@ -14,7 +44,10 @@ export const products: Product[] = [
     price: 2.5,
     created_at: '2025-01-10T10:00:00Z',
     owner_id: 10,
+    image: imageUrls[0],
     ratings: [{ user_id: 2, value: 4 }],
+    stock: 45,
+    discount: 10,
   },
   {
     id: 2,
@@ -22,16 +55,20 @@ export const products: Product[] = [
     price: 3.9,
     created_at: '2025-02-01T09:30:00Z',
     owner_id: 11,
+    image: imageUrls[1],
     ratings: [{ user_id: 3, value: 5 }],
+    stock: 32,
+    discount: 5,
   },
-
   {
     id: 3,
     name: 'Classeur Rouge',
     price: 4.5,
     created_at: '2025-02-12T12:00:00Z',
     owner_id: 12,
+    image: imageUrls[2],
     ratings: [{ user_id: 4, value: 3 }],
+    stock: 18,
   },
   {
     id: 4,
@@ -39,7 +76,10 @@ export const products: Product[] = [
     price: 1.2,
     created_at: '2025-03-01T08:45:00Z',
     owner_id: 13,
+    image: imageUrls[3],
     ratings: [{ user_id: 2, value: 5 }],
+    stock: 120,
+    discount: 15,
   },
   {
     id: 5,
@@ -47,7 +87,9 @@ export const products: Product[] = [
     price: 1.5,
     created_at: '2025-03-05T07:20:00Z',
     owner_id: 14,
+    image: imageUrls[4],
     ratings: [{ user_id: 1, value: 4 }],
+    stock: 67,
   },
   {
     id: 6,
@@ -55,7 +97,10 @@ export const products: Product[] = [
     price: 0.9,
     created_at: '2025-03-10T14:10:00Z',
     owner_id: 15,
+    image: imageUrls[5],
     ratings: [{ user_id: 3, value: 4 }],
+    stock: 200,
+    discount: 20,
   },
   {
     id: 7,
@@ -63,7 +108,9 @@ export const products: Product[] = [
     price: 1.7,
     created_at: '2025-03-11T11:00:00Z',
     owner_id: 16,
+    image: imageUrls[6],
     ratings: [{ user_id: 6, value: 5 }],
+    stock: 89,
   },
   {
     id: 8,
@@ -71,7 +118,10 @@ export const products: Product[] = [
     price: 0.3,
     created_at: '2025-03-12T09:00:00Z',
     owner_id: 17,
+    image: imageUrls[7],
     ratings: [{ user_id: 3, value: 3 }],
+    stock: 500,
+    discount: 25,
   },
   {
     id: 9,
@@ -79,7 +129,9 @@ export const products: Product[] = [
     price: 2.0,
     created_at: '2025-03-15T10:30:00Z',
     owner_id: 18,
+    image: imageUrls[8],
     ratings: [{ user_id: 5, value: 4 }],
+    stock: 76,
   },
   {
     id: 10,
@@ -87,7 +139,10 @@ export const products: Product[] = [
     price: 3.0,
     created_at: '2025-03-20T16:00:00Z',
     owner_id: 19,
+    image: imageUrls[9],
     ratings: [{ user_id: 7, value: 5 }],
+    stock: 54,
+    discount: 8,
   },
   {
     id: 11,
@@ -95,7 +150,10 @@ export const products: Product[] = [
     price: 4.0,
     created_at: '2025-03-22T12:40:00Z',
     owner_id: 20,
+    image: imageUrls[10],
     ratings: [{ user_id: 2, value: 4 }],
+    stock: 150,
+    discount: 12,
   },
   {
     id: 12,
@@ -103,7 +161,9 @@ export const products: Product[] = [
     price: 6.5,
     created_at: '2025-03-25T13:00:00Z',
     owner_id: 21,
+    image: imageUrls[11],
     ratings: [{ user_id: 8, value: 5 }],
+    stock: 28,
   },
   {
     id: 13,
@@ -111,7 +171,10 @@ export const products: Product[] = [
     price: 1.3,
     created_at: '2025-04-01T07:00:00Z',
     owner_id: 10,
+    image: imageUrls[12],
     ratings: [{ user_id: 9, value: 3 }],
+    stock: 95,
+    discount: 10,
   },
   {
     id: 14,
@@ -119,7 +182,9 @@ export const products: Product[] = [
     price: 2.8,
     created_at: '2025-04-03T08:00:00Z',
     owner_id: 11,
+    image: imageUrls[13],
     ratings: [{ user_id: 1, value: 4 }],
+    stock: 42,
   },
   {
     id: 15,
@@ -127,7 +192,10 @@ export const products: Product[] = [
     price: 2.5,
     created_at: '2025-04-05T10:20:00Z',
     owner_id: 12,
+    image: imageUrls[14],
     ratings: [{ user_id: 3, value: 5 }],
+    stock: 38,
+    discount: 7,
   },
   {
     id: 16,
@@ -135,7 +203,10 @@ export const products: Product[] = [
     price: 7.9,
     created_at: '2025-04-10T14:00:00Z',
     owner_id: 13,
+    image: imageUrls[15],
     ratings: [{ user_id: 6, value: 4 }],
+    stock: 25,
+    discount: 15,
   },
   {
     id: 17,
@@ -143,7 +214,9 @@ export const products: Product[] = [
     price: 2.2,
     created_at: '2025-04-12T12:30:00Z',
     owner_id: 14,
+    image: imageUrls[16],
     ratings: [{ user_id: 5, value: 3 }],
+    stock: 56,
   },
   {
     id: 18,
@@ -151,7 +224,10 @@ export const products: Product[] = [
     price: 9.5,
     created_at: '2025-04-15T11:10:00Z',
     owner_id: 15,
+    image: imageUrls[17],
     ratings: [{ user_id: 8, value: 5 }],
+    stock: 14,
+    discount: 18,
   },
   {
     id: 19,
@@ -159,7 +235,9 @@ export const products: Product[] = [
     price: 3.4,
     created_at: '2025-04-18T09:40:00Z',
     owner_id: 16,
+    image: imageUrls[18],
     ratings: [{ user_id: 2, value: 4 }],
+    stock: 71,
   },
   {
     id: 20,
@@ -167,6 +245,9 @@ export const products: Product[] = [
     price: 5.0,
     created_at: '2025-04-20T15:00:00Z',
     owner_id: 17,
+    image: imageUrls[19],
     ratings: [{ user_id: 9, value: 4 }],
+    stock: 22,
+    discount: 12,
   },
 ];
