@@ -27,175 +27,78 @@ import { MatIconModule } from '@angular/material/icon';
     MatIconModule,
   ],
   template: `
-    <div class="login-root">
-      <div class="login-wrap">
-        <mat-card class="login-card">
-          <div class="login-header">
-            <div class="brand-icon-wrap">
-              <div class="brand-icon-circle">
-                <mat-icon>storefront</mat-icon>
-              </div>
-              <div>
-                <h1 class="brand">My Shop</h1>
-                <p class="tagline">Sign in to continue</p>
-              </div>
+    <div class="min-h-screen containerbg flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md">
+        <div class="login-glass-card">
+          <div class="mb-8 text-center">
+            <div
+              class="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-sky-500 mb-4"
+            >
+              <mat-icon class="text-white text-3xl">storefront</mat-icon>
             </div>
+            <h1 class="signin-title">Sign In</h1>
+            <p class="text-sm text-slate-600 mt-1">Welcome back to My Shop</p>
           </div>
 
-          <mat-card-content>
-            <div *ngIf="loading$ | async" class="loading-wrap">
-              <mat-spinner diameter="40"></mat-spinner>
-            </div>
+          <div *ngIf="loading$ | async" class="flex justify-center py-4">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
 
-            <div *ngIf="error$ | async as error" class="error-box">
-              <p class="error-text">{{ error }}</p>
-            </div>
+          <div
+            *ngIf="error$ | async as error"
+            class="bg-red-50 border border-red-200 rounded-lg p-3 mb-6"
+          >
+            <p class="text-sm text-red-700">{{ error }}</p>
+          </div>
 
-            <app-login-form (submit)="handleLogin($event)"></app-login-form>
+          <app-login-form (submit)="handleLogin($event)"></app-login-form>
 
-            <div class="demo-note">
-              <p>Demo credentials: <code>demo / demo</code></p>
-            </div>
-          </mat-card-content>
+          <div class="mt-6 p-3 bg-white/30 rounded-lg border border-white/40">
+            <p class="text-xs text-slate-700 text-center">
+              Demo:
+              <code class="bg-white/50 px-2 py-1 rounded text-slate-900 font-mono"
+                >demo / demo</code
+              >
+            </p>
+          </div>
 
-          <mat-card-actions class="actions">
-            <button type="button" routerLink="/app" mat-button class="back-btn">
-              <mat-icon class="back-icon">arrow_back</mat-icon>
-              Back to Home
-            </button>
-          </mat-card-actions>
-        </mat-card>
+          <button
+            mat-stroked-button
+            routerLink="/app"
+            class="w-full mt-6 !border-sky-500 !text-sky-600 hover:!bg-sky-50"
+          >
+            ← Back to Home
+          </button>
+        </div>
       </div>
     </div>
   `,
   styles: [
     `
-      .login-root {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        background: radial-gradient(circle at top left, #449df5, #4d6c8b 40%, #7592af 100%);
+      .signin-title {
+        font-size: 34px;
+        font-weight: 700;
       }
 
-      .login-wrap {
+      .login-glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 8px 32px rgba(2, 132, 199, 0.1);
+      }
+
+      :host ::ng-deep .mat-mdc-form-field {
         width: 100%;
-        max-width: 480px;
       }
 
-      .login-card {
-        padding: 55px 26px 22px;
-        border-radius: 18px;
-        border: 1px solid #e3e6ea;
-        background: linear-gradient(145deg, #ffffff, #f7f9fc);
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-      }
-
-      .login-header {
-        margin-bottom: 20px;
-        border-bottom: 1px solid #e3e6ea;
-        padding-bottom: 16px;
-      }
-
-      .brand-icon-wrap {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .brand-icon-circle {
-        width: 41px;
-        height: 41px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #1976d2, #42a5f5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 10px 20px rgba(25, 118, 210, 0.35);
-      }
-
-      .brand-icon-circle mat-icon {
-        color: #ffffff;
-        font-size: 23px;
-      }
-
-      .brand {
-        margin: 0 0 4px 0;
-        color: #202124;
-        font-size: 22px;
-        font-weight: 600;
-        letter-spacing: 0.03em;
-      }
-
-      .tagline {
-        margin: 0;
-        color: #5f6368;
-        font-size: 13px;
-      }
-
-      mat-card-content {
-        padding: 0;
-      }
-
-      .loading-wrap {
-        display: flex;
-        justify-content: center;
-        padding: 12px 0 16px;
-      }
-
-      .error-box {
-        background: #fce8e6;
-        border: 1px solid #f8d7da;
-        padding: 10px 12px;
+      :host ::ng-deep .mat-mdc-text-field {
         border-radius: 6px;
-        margin-bottom: 14px;
       }
 
-      .error-text {
-        color: #c5221f;
-        margin: 0;
-        font-size: 13px;
-      }
-
-      .demo-note {
-        margin-top: 14px;
-        color: #80868b;
-        font-size: 12px;
-        text-align: center;
-      }
-
-      .demo-note code {
-        background: #eceff1;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 11px;
-      }
-
-      .actions {
-        display: flex;
-        justify-content: flex-start;
-        padding-top: 12px;
-        margin-top: 8px;
-        border-top: 1px solid #e3e6ea;
-      }
-
-      .back-btn {
-        text-transform: none;
-        font-size: 13px;
-        gap: 4px;
-      }
-
-      .back-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-      }
-
-      @media (max-width: 480px) {
-        .login-card {
-          padding: 22px 18px 18px;
-        }
+      :host ::ng-deep .mat-mdc-raised-button[color='primary'] {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
       }
     `,
   ],

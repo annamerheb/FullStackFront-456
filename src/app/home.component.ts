@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-home',
   imports: [RouterLink, MatButtonModule, MatIconModule],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-50">
+    <div class="min-h-screen containerbg">
       <div class="relative overflow-hidden px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
         <div class="absolute inset-0 overflow-hidden">
           <div
@@ -29,7 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
 
           <h1 class="mb-6 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
             Shop the
-            <span class="bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+            <span class="bg-gradient-to-r from-sky-500 to-cyan-600 bg-clip-text text-transparent">
               Future
             </span>
           </h1>
@@ -44,7 +44,7 @@ import { MatIconModule } from '@angular/material/icon';
               routerLink="/shop/products"
               mat-raised-button
               color="primary"
-              class="h-12 px-8 text-base font-semibold !bg-gradient-to-r !from-sky-600 !to-blue-600 !text-white shadow-lg hover:shadow-xl transition-shadow"
+              class="h-12 px-8 text-base font-semibold !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white shadow-lg hover:shadow-xl transition-shadow"
             >
               <mat-icon class="mr-2">shopping_bag</mat-icon>
               Start Shopping
@@ -53,7 +53,7 @@ import { MatIconModule } from '@angular/material/icon';
             <button
               routerLink="/app"
               mat-stroked-button
-              class="h-12 px-8 text-base font-semibold !border-2 !border-sky-600 !text-sky-600 hover:!bg-sky-50"
+              class="h-12 px-8 text-base font-semibold !border-sky-500 !text-sky-600 hover:!bg-sky-50"
             >
               <mat-icon class="mr-2">dashboard</mat-icon>
               View Dashboard

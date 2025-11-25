@@ -51,7 +51,7 @@ export interface Product {
     MatIconModule,
   ],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white px-4 py-12">
+    <div class="min-h-screen containerbg px-4 py-12">
       <div class="mx-auto max-w-7xl">
         <!-- Header Section -->
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -61,10 +61,9 @@ export interface Product {
             <p class="mt-2 text-slate-600">Discover our curated selection of products</p>
           </div>
           <button
-            mat-raised-button
-            color="primary"
+            mat-stroked-button
             routerLink="/app"
-            class="w-full sm:w-auto"
+            class="w-full sm:w-auto !border-sky-500 !text-sky-600 hover:!bg-sky-50"
           >
             ← Back to Dashboard
           </button>
@@ -75,11 +74,7 @@ export interface Product {
           <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">
             Filters & Sort
           </h3>
-          <form
-            [formGroup]="filterForm"
-            (ngSubmit)="applyFilters()"
-            class="grid gap-4 md:grid-cols-4"
-          >
+          <form [formGroup]="filterForm" class="grid gap-4 md:grid-cols-3">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>Items per Page</mat-label>
               <mat-select formControlName="pageSize">
@@ -92,12 +87,7 @@ export interface Product {
 
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>Min Rating</mat-label>
-              <input
-                matInput
-                type="text"
-                inputmode="decimal"
-                formControlName="minRating"
-              />
+              <input matInput type="text" inputmode="decimal" formControlName="minRating" />
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="w-full">
@@ -109,15 +99,6 @@ export interface Product {
                 <mat-option value="name">Name: A–Z</mat-option>
               </mat-select>
             </mat-form-field>
-
-            <button
-              mat-raised-button
-              color="primary"
-              type="submit"
-              class="h-11 w-full"
-            >
-              Apply Filters
-            </button>
           </form>
         </div>
 
@@ -142,47 +123,50 @@ export interface Product {
           >
             <div
               *ngFor="let product of products"
-              class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:border-sky-300 hover:shadow-lg"
+              class="group relative flex flex-col rounded-t-xl border border-slate-200 bg-white transition-all duration-300 hover:border-sky-300 hover:shadow-lg"
             >
               <!-- Image Section -->
-              <div class="relative h-48 overflow-hidden bg-slate-100">
+              <div class="h-48 bg-slate-100 overflow-hidden rounded-t-xl">
                 <img
                   [src]="product.image"
                   [alt]="product.name"
                   class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
                 />
-                <!-- Badges -->
-                <div class="absolute inset-0 flex flex-col gap-2 p-3">
-                  <div class="ml-auto flex flex-col gap-2">
-                    <div
-                      *ngIf="product.discount"
-                      class="w-fit rounded-lg bg-red-500 px-2 py-1 text-xs font-bold text-white"
-                    >
-                      -{{ product.discount }}% OFF
-                    </div>
-                    <div
-                      [ngClass]="{
-                        'bg-green-500': product.stock > 20,
-                        'bg-yellow-500': product.stock > 5 && product.stock <= 20,
-                        'bg-red-500': product.stock <= 5,
-                      }"
-                      class="w-fit rounded-lg px-2 py-1 text-xs font-semibold text-white"
-                    >
-                      {{ product.stock }} left
-                    </div>
-                  </div>
+              </div>
+
+              <!-- Badges -->
+              <div class="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                <!-- Discount badge -->
+                <div
+                  *ngIf="product.discount !== null && product.discount !== undefined"
+                  class="rounded-lg bg-red-600 px-3 py-1 text-xs font-bold text-white shadow-lg whitespace-nowrap"
+                >
+                  -{{ product.discount }}%
+                </div>
+
+                <!-- Stock badge -->
+                <div
+                  class="rounded-lg px-3 py-1 text-xs font-semibold shadow-lg whitespace-nowrap"
+                  [ngClass]="{
+                    'bg-green-600 text-white': product.stock > 20,
+                    'bg-yellow-600 text-white': product.stock > 5 && product.stock <= 20,
+                    'bg-red-600 text-white': product.stock <= 5,
+                    'bg-slate-200 text-slate-700': product.stock == null || product.stock === 0,
+                  }"
+                >
+                  {{ product.stock }} in stock
                 </div>
               </div>
 
               <!-- Content Section -->
               <div class="flex flex-1 flex-col p-4">
                 <!-- Title -->
-                <h3
+                <h5
                   class="mb-2 line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-sky-600 transition"
                 >
                   {{ product.name }}
-                </h3>
+                </h5>
 
                 <!-- Rating -->
                 <div class="mb-3 flex items-center gap-1">
@@ -190,7 +174,6 @@ export interface Product {
                   <span class="text-xs font-semibold text-slate-700">
                     {{ product.avgRating | number: '1.1-1' }}
                   </span>
-                  <span class="text-xs text-slate-500">({{ product.reviews_count }})</span>
                 </div>
 
                 <!-- Prices -->
@@ -211,10 +194,9 @@ export interface Product {
                 <!-- Actions -->
                 <div class="mt-auto flex gap-2">
                   <button
-                    mat-raised-button
-                    color="primary"
+                    mat-stroked-button
                     [routerLink]="['/shop/products', product.id]"
-                    class="flex-1 !h-9 !text-xs !font-semibold !rounded-lg"
+                    class="flex-1 !h-9 !text-xs !font-semibold !rounded-lg !border-sky-500 !text-sky-600 hover:!bg-sky-50"
                   >
                     View Details
                   </button>
@@ -252,7 +234,8 @@ export interface Product {
             <mat-paginator
               [length]="totalProducts"
               [pageSize]="pageSize"
-              [pageSizeOptions]="[6, 12, 24, 48]"
+              [pageSizeOptions]="[]"
+              hidePageSize="true"
               (page)="onPageChange($event)"
               showFirstLastButtons
             ></mat-paginator>
@@ -274,7 +257,7 @@ export interface Product {
       }
 
       .containerbg {
-        background: radial-gradient(circle at top left, #439cf5 0, #b6dcff 40%, #62adf2 100%);
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
 
       .product-card {
@@ -317,7 +300,7 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   error$: Observable<string | null>;
   totalProducts$: Observable<number>;
   totalProducts = 0;
-  pageSize = 6;
+  pageSize = 8;
   currentPage = 0;
   private destroy$ = new Subject<void>();
   wishlistItems: any[] = [];
@@ -327,7 +310,7 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
     private store: Store,
   ) {
     this.filterForm = this.fb.group({
-      pageSize: [6],
+      pageSize: [8],
       minRating: [0],
       ordering: [''],
     });
@@ -351,6 +334,13 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.applyFilters();
+
+    // Subscribe to form value changes to automatically apply filters
+    this.filterForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.currentPage = 0;
+      this.pageSize = Number(this.filterForm.get('pageSize')?.value) || 6;
+      this.loadProducts();
+    });
   }
 
   ngOnDestroy(): void {

@@ -24,7 +24,7 @@ import { CartItem } from '../../state/cart/cart.models';
     <mat-card class="cart-item-card cart-item-enter">
       <div class="item-content">
         <div class="product-info">
-          <h3 class="product-name">{{ item.product.name }}</h3>
+          <h5 class="product-name">{{ item.product.name }}</h5>
           <div class="price-section">
             <p *ngIf="item.product.discount" class="original-price">
               {{ formatPrice(item.product.price) }}

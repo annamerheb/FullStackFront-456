@@ -52,9 +52,8 @@ export interface ProductRating {
 
             <button
               mat-stroked-button
-              color="primary"
               routerLink="/app"
-              class="!border-sky-500 !bg-white !text-sky-700 shadow-sm hover:!bg-sky-50"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
             >
               ← Back to dashboard
             </button>
@@ -82,7 +81,7 @@ export interface ProductRating {
                 color="primary"
                 type="submit"
                 [disabled]="searchForm.invalid || (loading$ | async)"
-                class="h-11 w-full sm:w-auto"
+                class="h-11 w-full sm:w-auto !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white"
               >
                 <ng-container *ngIf="loading$ | async; else showTxt">
                   <mat-spinner diameter="20"></mat-spinner>
@@ -141,7 +140,7 @@ export interface ProductRating {
   styles: [
     `
       .containerbg {
-        background: radial-gradient(circle at top left, #439cf5 0, #b6dcff 40%, #62adf2 100%);
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
 
       .rating-card {

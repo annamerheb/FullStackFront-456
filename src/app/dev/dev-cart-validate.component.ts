@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -6,8 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -19,18 +18,15 @@ import { MatInputModule } from '@angular/material/input';
     MatCardModule,
     MatIconModule,
     FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
+    JsonPipe,
   ],
   template: `
-    <div
-      class="min-h-screen bg-gradient-to-br from-blue-50 via-sky-100 to-indigo-100 px-4 py-10 !font-sans"
-    >
-      <div class="mx-auto max-w-4xl">
+    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
+      <div class="mx-auto flex max-w-3xl flex-col gap-6">
         <div
-          class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md mb-6"
+          class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
         >
-          <div class="flex items-center justify-between gap-4">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
                 Development
@@ -40,6 +36,7 @@ import { MatInputModule } from '@angular/material/input';
                 POST /api/cart/validate/ - Returns price summary
               </p>
             </div>
+
             <button
               mat-stroked-button
               color="primary"
@@ -49,48 +46,47 @@ import { MatInputModule } from '@angular/material/input';
               Dev Index
             </button>
           </div>
+
+          <div class="p-4 flex gap-3">
+            <button mat-raised-button color="primary" (click)="sendRequest()">Send Request</button>
+          </div>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-2">
-          <mat-card class="rounded-2xl border border-white/70 shadow-xl backdrop-blur-md">
-            <mat-card-header>
-              <mat-card-title>Request Payload</mat-card-title>
-            </mat-card-header>
-            <mat-card-content class="space-y-4">
-              <textarea
-                [(ngModel)]="requestPayload"
-                class="w-full h-64 p-4 border border-slate-200 rounded-lg font-mono text-sm"
-              ></textarea>
-              <button
-                mat-raised-button
-                color="primary"
-                (click)="sendRequest()"
-                class="w-full !bg-gradient-to-r !from-sky-600 !to-blue-600 !text-white"
-              >
-                <mat-icon class="mr-2">send</mat-icon>
-                Send Request
-              </button>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="rounded-2xl border border-white/70 shadow-xl backdrop-blur-md">
-            <mat-card-header>
-              <mat-card-title>Response</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <pre
-                *ngIf="response"
-                class="p-4 bg-slate-900 text-sky-400 rounded-lg overflow-auto max-h-96 text-sm"
-                >{{ response | json }}</pre
-              >
-              <p *ngIf="!response" class="text-slate-500 text-center py-8">No response yet...</p>
-            </mat-card-content>
-          </mat-card>
+        <div class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md">
+          <h3 class="font-semibold text-slate-900">Request Payload</h3>
+          <textarea
+            [(ngModel)]="requestPayload"
+            class="mt-3 w-full h-64 p-3 rounded bg-slate-50 border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+          ></textarea>
         </div>
+
+        @if (response()) {
+          <div
+            class="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
+          >
+            <h3 class="font-semibold text-slate-900">Response</h3>
+            <pre class="mt-3 rounded bg-slate-50 p-3 text-sm overflow-auto">{{
+              response() | json
+            }}</pre>
+          </div>
+        }
+        @if (error()) {
+          <div
+            class="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700 shadow-sm"
+          >
+            {{ error() }}
+          </div>
+        }
       </div>
     </div>
   `,
-  styles: [],
+  styles: [
+    `
+      .containerbg {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
+      }
+    `,
+  ],
 })
 export class DevCartValidateComponent implements OnInit {
   requestPayload = `{
@@ -108,25 +104,29 @@ export class DevCartValidateComponent implements OnInit {
   "delivery_charge": 5.99
 }`;
 
-  response: any = null;
+  response = signal<any>(null);
+  error = signal<string | null>(null);
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {}
 
   sendRequest() {
+    this.error.set(null);
+    this.response.set(null);
+
     try {
       const payload = JSON.parse(this.requestPayload);
       this.http.post('/api/cart/validate/', payload).subscribe({
         next: (res) => {
-          this.response = res;
+          this.response.set(res);
         },
         error: (err) => {
-          this.response = { error: err.message };
+          this.error.set(err.error?.message || err.message || 'Request failed');
         },
       });
     } catch (e) {
-      this.response = { error: 'Invalid JSON' };
+      this.error.set('Invalid JSON payload');
     }
   }
 }

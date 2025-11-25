@@ -22,9 +22,7 @@ import { CartSummaryComponent } from '../cart/cart-summary.component';
     CartSummaryComponent,
   ],
   template: `
-    <div
-      class="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-50 px-4 py-8 checkout-page-enter"
-    >
+    <div class="min-h-screen containerbg px-4 py-8 checkout-page-enter">
       <div class="mx-auto flex max-w-4xl flex-col gap-6">
         <div
           class="flex flex-col gap-6 rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm"
@@ -32,7 +30,7 @@ import { CartSummaryComponent } from '../cart/cart-summary.component';
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">Checkout</p>
-              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Step 1: Order Summary</h1>
+              <h3 class="mt-2 text-3xl font-medium text-slate-500">Step 1: Order Summary</h3>
               <p class="mt-1 text-sm text-slate-600">Review your items before proceeding</p>
             </div>
           </div>
@@ -80,7 +78,7 @@ import { CartSummaryComponent } from '../cart/cart-summary.component';
                   <p class="text-sm text-slate-600">Qty: {{ item.quantity }}</p>
                 </div>
                 <p class="font-semibold text-slate-900">
-                  {{ formatPrice(item.product.price * item.quantity) }}
+                  {{ formatPrice(getDiscountedPrice(item.product) * item.quantity) }}
                 </p>
               </div>
             </div>
@@ -104,7 +102,11 @@ import { CartSummaryComponent } from '../cart/cart-summary.component';
                 Continue to Address
               </button>
 
-              <button mat-stroked-button routerLink="/shop/cart" class="mt-2 w-full">
+              <button
+                mat-stroked-button
+                routerLink="/shop/cart"
+                class="mt-2 w-full !border-sky-500 !text-sky-600 hover:!bg-sky-50"
+              >
                 Back to Cart
               </button>
             </div>
@@ -133,5 +135,12 @@ export class CheckoutSummaryComponent {
       style: 'currency',
       currency: 'EUR',
     }).format(price);
+  }
+
+  getDiscountedPrice(product: any): number {
+    if (!product.discount) {
+      return product.price;
+    }
+    return product.price - (product.price * product.discount) / 100;
   }
 }

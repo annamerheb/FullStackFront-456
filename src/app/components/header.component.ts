@@ -32,7 +32,7 @@ import * as AuthActions from '../state/auth/auth.actions';
           routerLink="/"
           class="group flex items-center gap-2 text-lg font-bold text-slate-900 transition hover:text-sky-600 cursor-pointer"
         >
-          <mat-icon class="brand-icon">storefront</mat-icon>
+          <mat-icon class="brand-icon !text-sky-500">storefront</mat-icon>
           <span class="brand-name hidden sm:inline">My Shop</span>
         </button>
 

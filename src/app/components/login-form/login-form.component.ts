@@ -94,6 +94,7 @@ import { MatIconModule } from '@angular/material/icon';
       .icon {
         position: absolute;
         left: 12px;
+        top: 15px;
         font-size: 15px;
         opacity: 0.6;
       }

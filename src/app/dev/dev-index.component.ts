@@ -40,7 +40,7 @@ import { MatIconModule } from '@angular/material/icon';
                 type="button"
                 routerLink="/dev/auth"
                 mat-stroked-button
-                class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
                 <span class="font-medium">Auth:</span>&nbsp;POST /api/auth/token/ (+refresh)
               </button>
@@ -48,7 +48,7 @@ import { MatIconModule } from '@angular/material/icon';
                 type="button"
                 routerLink="/dev/products"
                 mat-stroked-button
-                class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
                 <span class="font-medium">Products List:</span>&nbsp;GET /api/products/
               </button>
@@ -56,7 +56,7 @@ import { MatIconModule } from '@angular/material/icon';
                 type="button"
                 routerLink="/dev/products/1"
                 mat-stroked-button
-                class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
                 <span class="font-medium">Product Details:</span>&nbsp;GET /api/products/:id/ (with
                 stock & discount)
@@ -65,7 +65,7 @@ import { MatIconModule } from '@angular/material/icon';
                 type="button"
                 routerLink="/dev/products/1/rating"
                 mat-stroked-button
-                class="!justify-start !text-left !border-sky-200 !text-slate-700 hover:!bg-sky-50"
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
                 <span class="font-medium">Product Rating:</span>&nbsp;GET /api/products/:id/rating/
               </button>
@@ -73,7 +73,7 @@ import { MatIconModule } from '@angular/material/icon';
                 type="button"
                 routerLink="/dev/cart-validate"
                 mat-stroked-button
-                class="!justify-start !text-left !border-emerald-200 !text-slate-700 hover:!bg-emerald-50"
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
                 <span class="font-medium">Cart Validate:</span>&nbsp;POST /api/cart/validate/ (price
                 summary)
@@ -82,7 +82,7 @@ import { MatIconModule } from '@angular/material/icon';
                 type="button"
                 routerLink="/dev/order"
                 mat-stroked-button
-                class="!justify-start !text-left !border-amber-200 !text-slate-700 hover:!bg-amber-50"
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
                 <span class="font-medium">Create Order:</span>&nbsp;POST /api/order/ (confirmation
                 #)
@@ -96,7 +96,7 @@ import { MatIconModule } from '@angular/material/icon';
   styles: [
     `
       .containerbg {
-        background: radial-gradient(circle at top left, #439cf5 0, #b6dcff 40%, #62adf2 100%);
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
     `,
   ],

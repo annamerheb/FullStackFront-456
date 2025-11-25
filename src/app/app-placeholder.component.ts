@@ -19,8 +19,8 @@ import { Observable } from 'rxjs';
         <section class="hero">
           <div class="hero-inner">
             <div class="hero-text">
-              <h1>Welcome to My Shop</h1>
-              <p>
+              <h1 class="!text-white">Welcome to My Shop</h1>
+              <p class="!text-white">
                 Browse a compact shop demo with sign-in, product exploration, and rating features.
               </p>
             </div>
@@ -32,14 +32,24 @@ import { Observable } from 'rxjs';
             <mat-icon class="feature-icon">login</mat-icon>
             <h3>Sign In</h3>
             <p>Access your account with the demo credentials <code>demo/demo</code>.</p>
-            <button mat-raised-button color="primary" routerLink="/login">Go to Login</button>
+            <button
+              mat-stroked-button
+              routerLink="/login"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
+            >
+              Go to Login
+            </button>
           </mat-card>
 
           <mat-card class="feature-card">
             <mat-icon class="feature-icon">shopping_bag</mat-icon>
             <h3>Shop Products</h3>
             <p>Browse the product list with filters and sorting options.</p>
-            <button mat-raised-button color="primary" routerLink="/shop/products">
+            <button
+              mat-stroked-button
+              routerLink="/shop/products"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
+            >
               Browse products
             </button>
           </mat-card>
@@ -48,8 +58,25 @@ import { Observable } from 'rxjs';
             <mat-icon class="feature-icon">star_rate</mat-icon>
             <h3>Check Ratings</h3>
             <p>See aggregate ratings for any product by its ID.</p>
-            <button mat-raised-button color="primary" routerLink="/shop/rating">
+            <button
+              mat-stroked-button
+              routerLink="/shop/rating"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
+            >
               View Ratings
+            </button>
+          </mat-card>
+
+          <mat-card class="feature-card">
+            <mat-icon class="feature-icon">engineering</mat-icon>
+            <h3>Dev Testing</h3>
+            <p>Access the development and testing zone for component exploration.</p>
+            <button
+              mat-stroked-button
+              routerLink="/dev"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
+            >
+              Go to Dev
             </button>
           </mat-card>
         </section>
@@ -62,7 +89,7 @@ import { Observable } from 'rxjs';
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        background: radial-gradient(circle at top left, #439cf5 0, #b6dcff 40%, #62adf2 100%);
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
 
       .content {
@@ -78,9 +105,9 @@ import { Observable } from 'rxjs';
       .hero {
         padding: 24px 28px;
         border-radius: 20px;
-        background: linear-gradient(135deg, #1976d2, #42a5f5);
-        color: #ffffff;
-        box-shadow: 0 18px 40px rgba(25, 118, 210, 0.35);
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        color: #ffffff !important;
+        box-shadow: 0 18px 40px rgba(2, 132, 199, 0.35);
       }
 
       .hero-inner {
@@ -137,7 +164,7 @@ import { Observable } from 'rxjs';
 
       .feature-icon {
         font-size: 26px;
-        color: #1976d2;
+        color: #0284c7;
       }
 
       .feature-card h3 {

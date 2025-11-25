@@ -31,19 +31,17 @@ import { finalize } from 'rxjs/operators';
     ReactiveFormsModule,
   ],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-white px-4 py-12">
+    <div class="min-h-screen containerbg px-4 py-12">
       <div class="mx-auto max-w-5xl">
         <!-- Header -->
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-sm font-semibold uppercase tracking-wider text-sky-600">Product Details</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-sky-600">
+              Product Details
+            </p>
             <h1 class="mt-2 text-4xl font-bold text-slate-900">{{ product?.name }}</h1>
           </div>
-          <button
-            mat-raised-button
-            color="primary"
-            routerLink="/shop/products"
-          >
+          <button mat-raised-button color="primary" routerLink="/shop/products">
             ← Back to Products
           </button>
         </div>
@@ -73,7 +71,7 @@ import { finalize } from 'rxjs/operators';
               <!-- Title & Rating -->
               <div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-3">{{ product.name }}</h2>
-                
+
                 <!-- Rating -->
                 <div class="flex items-center gap-3 mb-4">
                   <div class="flex items-center">
@@ -82,7 +80,6 @@ import { finalize } from 'rxjs/operators';
                       {{ product.avgRating | number: '1.1-1' }}
                     </span>
                   </div>
-                  <span class="text-sm text-slate-500">({{ product.reviews_count }} reviews)</span>
                 </div>
               </div>
 
@@ -107,7 +104,9 @@ import { finalize } from 'rxjs/operators';
                       {{ getDiscountedPrice(product) | currency: 'EUR' }}
                     </span>
                     <div *ngIf="product.discount" class="ml-auto">
-                      <span class="inline-block bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-bold">
+                      <span
+                        class="inline-block bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-bold"
+                      >
                         -{{ product.discount }}% SAVE
                       </span>
                     </div>
@@ -125,7 +124,9 @@ import { finalize } from 'rxjs/operators';
                       'bg-red-100 text-red-700': product.stock <= 5,
                     }"
                   >
-                    <mat-icon class="text-sm">{{ product.stock > 0 ? 'check_circle' : 'error' }}</mat-icon>
+                    <mat-icon class="text-sm">{{
+                      product.stock > 0 ? 'check_circle' : 'error'
+                    }}</mat-icon>
                     <span>{{ product.stock }} in stock</span>
                   </div>
                 </div>
@@ -154,7 +155,7 @@ import { finalize } from 'rxjs/operators';
                 <button
                   mat-stroked-button
                   routerLink="/shop/cart"
-                  class="w-full h-11 !rounded-lg !font-semibold"
+                  class="w-full h-11 !rounded-lg !font-semibold !border-sky-500 !text-sky-600 hover:!bg-sky-50"
                 >
                   View Your Cart
                 </button>

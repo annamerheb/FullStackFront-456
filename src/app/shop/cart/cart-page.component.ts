@@ -32,11 +32,11 @@ import { CartSummaryComponent } from './cart-summary.component';
     CartSummaryComponent,
   ],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-50 px-4 py-8">
+    <div class="min-h-screen containerbg px-4 py-8">
       <div class="mx-auto flex max-w-6xl flex-col gap-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-slate-900">Shopping Cart</h1>
+            <h3 class="text-3xl font-medium text-slate-500">Shopping Cart</h3>
             <p class="mt-1 text-slate-600">Review and manage your items</p>
           </div>
 
@@ -66,7 +66,7 @@ import { CartSummaryComponent } from './cart-summary.component';
             mat-raised-button
             color="primary"
             routerLink="/shop/products"
-            class="mt-6 h-11 px-8 !bg-gradient-to-r !from-sky-600 !to-blue-600 !text-white font-semibold"
+            class="mt-6 h-11 px-8 !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white font-semibold"
           >
             <mat-icon class="mr-2">shopping_bag</mat-icon>
             Start Shopping
@@ -76,9 +76,9 @@ import { CartSummaryComponent } from './cart-summary.component';
         <div *ngIf="!(isEmpty$ | async)" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div class="lg:col-span-2">
             <div class="rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm">
-              <h2 class="mb-6 text-lg font-bold text-slate-900">
+              <h3 class="mb-6 text-lg font-medium text-slate-500">
                 Items <span class="text-sky-600">({{ cartCount$ | async }})</span>
-              </h2>
+              </h3>
               <app-cart-item
                 *ngFor="let item of cartItems$ | async"
                 [item]="item"
@@ -100,7 +100,7 @@ import { CartSummaryComponent } from './cart-summary.component';
               <button
                 mat-raised-button
                 routerLink="/shop/checkout/summary"
-                class="w-full h-12 !bg-gradient-to-r !from-sky-600 !to-blue-600 !text-white font-semibold !rounded-lg"
+                class="mt-4 w-full h-12 !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white font-semibold !rounded-lg"
               >
                 <mat-icon class="mr-2">payment</mat-icon>
                 Proceed to Checkout

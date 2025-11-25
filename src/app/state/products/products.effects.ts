@@ -26,6 +26,8 @@ export class ProductsEffects {
             created_at: p.created_at,
             image: p.image,
             avgRating: avgRating(p.ratings),
+            stock: p.stock,
+            discount: p.discount,
           }))
           .filter((p: any) => p.avgRating >= minRating);
 

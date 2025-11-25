@@ -24,7 +24,7 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
     MatBadgeModule,
   ],
   template: `
-    <div class="min-h-screen containerbg from-blue-50 via-sky-100 to-indigo-100 px-4 py-10">
+    <div class="min-h-screen containerbg px-4 py-10">
       <div class="mx-auto flex max-w-6xl flex-col gap-6">
         <div
           class="flex flex-col gap-6 rounded-2xl border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-md"
@@ -34,15 +34,14 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
                 My Wishlist
               </p>
-              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Wishlist</h1>
+              <h3 class="mt-2 text-3xl font-medium text-slate-500">Wishlist</h3>
               <p class="mt-1 text-sm text-slate-600">Items you've saved for later</p>
             </div>
 
             <button
               mat-stroked-button
-              color="primary"
               routerLink="/shop/products"
-              class="!border-sky-500 !bg-white !text-sky-700 shadow-sm hover:!bg-sky-50"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
             >
               ← Continue Shopping
             </button>
@@ -93,7 +92,7 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
                     mat-raised-button
                     color="primary"
                     (click)="addToCart(item)"
-                    class="flex-1 !rounded-lg !bg-gradient-to-r !from-sky-500 !to-blue-600 !text-white text-xs font-semibold h-9"
+                    class="flex-1 !rounded-lg !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white text-xs font-semibold h-9"
                   >
                     <mat-icon class="mr-1">shopping_cart</mat-icon>
                     Add to Cart
@@ -120,7 +119,12 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
             <p class="mt-1 text-sm text-slate-400">
               Start adding items to your wishlist by clicking the heart icon on products
             </p>
-            <button mat-raised-button color="primary" routerLink="/shop/products" class="mt-6">
+            <button
+              mat-raised-button
+              color="primary"
+              routerLink="/shop/products"
+              class="mt-6 !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white"
+            >
               Browse Products
             </button>
           </div>
@@ -141,7 +145,7 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
       }
 
       .containerbg {
-        background: radial-gradient(circle at top left, #439cf5 0, #b6dcff 40%, #62adf2 100%);
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
 
       mat-icon {
