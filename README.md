@@ -629,8 +629,22 @@ The application uses **NgRx** with 6 feature stores:
 ### 4. **Wishlist Store** (`src/app/state/wishlist/`)
 
 - Manages wishlist items and count
-- Persisted to localStorage
-- Selectors for item presence and count display
+- **Design Decision**: Implemented as dedicated store slice (not integrated into user slice) for:
+  - Clear separation of concerns (wishlist is user-independent feature)
+  - Easier to extend (add features like wishlist sharing, notifications)
+  - Better testability and reusability
+- **Persistence**:
+  - Wishlist product IDs stored in `localStorage` as JSON array
+  - Automatically restored on app startup via `[App] Init` action
+  - Synced to `localStorage` whenever wishlist changes (add/remove/clear)
+- **Endpoints**:
+  - `GET /api/me/wishlist/` - Returns `{ productIds: number[] }`
+  - `POST /api/me/wishlist/` - Accepts `{ productIds: number[] }`, updates wishlist on server
+- **Actions**: `addToWishlist`, `removeFromWishlist`, `clearWishlist`, `loadWishlistFromStorage`
+- **Selectors**:
+  - `selectWishlistItems` - Get all wishlist items with details
+  - `selectWishlistCount` - Get total count
+  - `selectIsInWishlist(productId)` - Check if product in wishlist
 
 ### 5. **Discounts Store** (`src/app/state/discounts/`)
 

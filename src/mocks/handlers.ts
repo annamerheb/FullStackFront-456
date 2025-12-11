@@ -105,6 +105,8 @@ let dynamicOrders: any[] = [
   },
 ];
 
+let dynamicWishlist: number[] = [];
+
 export const handlers = [
   http.post(`${API}/auth/token/`, async () => {
     return HttpResponse.json(
@@ -436,5 +438,15 @@ export const handlers = [
 
     const sanitized = sanitizeOrder(order);
     return HttpResponse.json(sanitized);
+  }),
+
+  http.get('/api/me/wishlist/', () => {
+    return HttpResponse.json({ productIds: dynamicWishlist }, { status: 200 });
+  }),
+
+  http.post('/api/me/wishlist/', async ({ request }) => {
+    const body = (await request.json()) as { productIds: number[] };
+    dynamicWishlist = body.productIds || [];
+    return HttpResponse.json({ productIds: dynamicWishlist }, { status: 200 });
   }),
 ];

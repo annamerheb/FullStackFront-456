@@ -137,4 +137,16 @@ export class ShopApiService {
     console.log(`[API] POST ${url}`, orderPayload);
     return this.http.post<any>(url, orderPayload);
   }
+
+  getWishlist(): Observable<{ productIds: number[] }> {
+    const url = `${this.baseUrl}/me/wishlist/`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<{ productIds: number[] }>(url);
+  }
+
+  updateWishlist(productIds: number[]): Observable<{ productIds: number[] }> {
+    const url = `${this.baseUrl}/me/wishlist/`;
+    console.log(`[API] POST ${url}`, { productIds });
+    return this.http.post<{ productIds: number[] }>(url, { productIds });
+  }
 }

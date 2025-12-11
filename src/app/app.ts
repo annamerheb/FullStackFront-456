@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { HeaderComponent } from './components/header.component';
+import { appInit } from './state/app.actions';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +11,11 @@ import { HeaderComponent } from './components/header.component';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('my-shop');
+  private readonly store = inject(Store);
+
+  ngOnInit() {
+    this.store.dispatch(appInit());
+  }
 }

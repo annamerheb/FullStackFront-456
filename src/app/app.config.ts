@@ -20,6 +20,7 @@ import { userReducer } from './state/user/user.reducer';
 import { AuthEffects } from './state/auth/auth.effects';
 import { ProductsEffects } from './state/products/products.effects';
 import { CartEffects } from './state/cart/cart.effects';
+import { WishlistEffects } from './state/wishlist/wishlist.effects';
 import { DiscountsEffects } from './state/discounts/discounts.effects';
 import { UserEffects } from './state/user/user.effects';
 import { authInterceptor } from './services/auth.interceptor';
@@ -37,7 +38,14 @@ export const appConfig: ApplicationConfig = {
     provideState('discounts', discountsReducer),
     provideState('delivery', deliveryReducer),
     provideState('user', userReducer),
-    provideEffects([AuthEffects, ProductsEffects, CartEffects, DiscountsEffects, UserEffects]),
+    provideEffects([
+      AuthEffects,
+      ProductsEffects,
+      CartEffects,
+      WishlistEffects,
+      DiscountsEffects,
+      UserEffects,
+    ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
 };

@@ -18,3 +18,8 @@ export const removeFromWishlist = createAction(
 );
 
 export const clearWishlist = createAction('[Wishlist] Clear Wishlist');
+
+export const loadWishlistFromStorage = createAction(
+  '[Wishlist] Load From Storage',
+  props<{ productIds: number[] }>(),
+);

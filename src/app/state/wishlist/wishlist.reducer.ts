@@ -29,4 +29,14 @@ export const wishlistReducer = createReducer(
     ...state,
     items: [],
   })),
+
+  on(WishlistActions.loadWishlistFromStorage, (state, { productIds }) => ({
+    ...state,
+    items: productIds.map((id) => ({
+      id,
+      name: '',
+      price: 0,
+      image: '',
+    })),
+  })),
 );

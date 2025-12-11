@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,8 +9,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { Product } from '../../services/types';
 import * as CartActions from '../../state/cart/cart.actions';
+import * as WishlistActions from '../../state/wishlist/wishlist.actions';
+import { selectIsInWishlist } from '../../state/wishlist/wishlist.selectors';
 import { ShopApiService } from '../../services/shop-api.service';
 import { finalize } from 'rxjs/operators';
 
@@ -21,7 +24,6 @@ import { finalize } from 'rxjs/operators';
   imports: [
     CommonModule,
     RouterLink,
-    MatCardModule,
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
@@ -41,17 +43,29 @@ import { finalize } from 'rxjs/operators';
             </p>
             <h1 class="mt-2 text-4xl font-bold text-slate-900">{{ product?.name }}</h1>
           </div>
-          <button mat-raised-button color="primary" routerLink="/shop/products">
-            ← Back to Products
-          </button>
+          <div class="flex gap-3">
+            <button
+              mat-icon-button
+              class="rounded-full border border-slate-200 bg-white hover:bg-slate-100"
+              [class.!bg-red-50]="isInWishlist$ | async"
+              (click)="toggleWishlist()"
+            >
+              <mat-icon [class.text-red-500]="isInWishlist$ | async">{{
+                (isInWishlist$ | async) ? 'favorite' : 'favorite_border'
+              }}</mat-icon>
+            </button>
+            <button mat-raised-button color="primary" routerLink="/shop/products">
+              ← Back to Products
+            </button>
+          </div>
         </div>
 
         <!-- Main Content -->
         <div
           *ngIf="product"
-          class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+          class="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden"
         >
-          <div class="grid gap-8 p-6 md:grid-cols-2 lg:gap-12">
+          <div class="grid gap-8 p-8 md:grid-cols-2">
             <!-- Product Image -->
             <div class="flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden">
               <img
@@ -71,31 +85,29 @@ import { finalize } from 'rxjs/operators';
               <!-- Title & Rating -->
               <div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-3">{{ product.name }}</h2>
-
                 <!-- Rating -->
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="flex items-center">
-                    <span class="text-amber-400 text-lg">★</span>
-                    <span class="ml-1 font-semibold text-slate-900">
-                      {{ product.avgRating | number: '1.1-1' }}
-                    </span>
-                  </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-amber-400 text-lg">★</span>
+                  <span class="font-semibold text-slate-900">
+                    {{ product.avgRating | number: '1.1-1' }}
+                  </span>
                 </div>
               </div>
 
-              <!-- Pricing Section -->
-              <div class="space-y-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+              <!-- Pricing & Stock Info -->
+              <div class="space-y-4">
+                <!-- Price -->
                 <div>
-                  <p class="text-sm text-slate-600 mb-1">Price</p>
+                  <p class="text-sm text-slate-600 mb-2">Price</p>
                   <div class="flex items-center gap-3">
                     <span
                       *ngIf="product.discount"
-                      class="text-lg font-semibold text-slate-400 line-through"
+                      class="text-sm font-semibold text-slate-400 line-through"
                     >
                       {{ product.price | currency: 'EUR' }}
                     </span>
                     <span
-                      class="text-3xl font-bold"
+                      class="text-xl font-bold"
                       [ngClass]="{
                         'text-green-600': product.discount,
                         'text-sky-600': !product.discount,
@@ -103,18 +115,17 @@ import { finalize } from 'rxjs/operators';
                     >
                       {{ getDiscountedPrice(product) | currency: 'EUR' }}
                     </span>
-                    <div *ngIf="product.discount" class="ml-auto">
-                      <span
-                        class="inline-block bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-bold"
-                      >
-                        -{{ product.discount }}% SAVE
-                      </span>
-                    </div>
+                    <span
+                      *ngIf="product.discount"
+                      class="ml-auto inline-block bg-red-500 text-white px-2 py-1 rounded text-xs font-bold"
+                    >
+                      -{{ product.discount }}% SAVE
+                    </span>
                   </div>
                 </div>
 
                 <!-- Stock Status -->
-                <div class="border-t border-slate-200 pt-3">
+                <div>
                   <p class="text-sm text-slate-600 mb-2">Availability</p>
                   <div
                     class="inline-flex items-center gap-2 px-3 py-2 rounded-lg font-semibold"
@@ -145,7 +156,7 @@ import { finalize } from 'rxjs/operators';
                   mat-raised-button
                   color="primary"
                   type="submit"
-                  class="w-full h-12 btn-add-to-cart !rounded-lg !font-semibold"
+                  class="w-full h-12 !rounded-lg !font-semibold"
                   [disabled]="addToCartForm.invalid"
                 >
                   <mat-icon>shopping_cart</mat-icon>
@@ -228,13 +239,6 @@ import { finalize } from 'rxjs/operators';
       .containerbg {
         background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
-
-      .product-icon {
-        font-size: 64px;
-        width: 64px;
-        height: 64px;
-        color: #ccc;
-      }
     `,
   ],
 })
@@ -242,6 +246,7 @@ export class ProductDetailsPageComponent implements OnInit {
   product: Product | null = null;
   isLoading = true;
   addToCartForm: FormGroup;
+  isInWishlist$!: Observable<boolean>;
 
   constructor(
     private route: ActivatedRoute,
@@ -274,6 +279,7 @@ export class ProductDetailsPageComponent implements OnInit {
       .subscribe({
         next: (product) => {
           this.product = product;
+          this.isInWishlist$ = this.store.select(selectIsInWishlist(product.id));
         },
         error: (error) => {
           console.error('Failed to load product:', error);
@@ -296,6 +302,27 @@ export class ProductDetailsPageComponent implements OnInit {
 
       this.addToCartForm.reset({ quantity: 1 });
     }
+  }
+
+  toggleWishlist() {
+    if (!this.product) return;
+
+    this.isInWishlist$.pipe(take(1)).subscribe((isInWishlist) => {
+      if (isInWishlist) {
+        this.store.dispatch(WishlistActions.removeFromWishlist({ productId: this.product!.id }));
+      } else {
+        this.store.dispatch(
+          WishlistActions.addToWishlist({
+            product: {
+              id: this.product!.id,
+              name: this.product!.name,
+              price: this.product!.price,
+              image: this.product!.image || '',
+            },
+          }),
+        );
+      }
+    });
   }
 
   formatPrice(price: number): string {

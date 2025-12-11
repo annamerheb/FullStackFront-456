@@ -111,6 +111,15 @@ import { MatIconModule } from '@angular/material/icon';
               >
                 <span class="font-medium">Order Details:</span>&nbsp;GET /api/orders/:id/
               </button>
+              <button
+                type="button"
+                routerLink="/dev/wishlist"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">Wishlist:</span>&nbsp;GET /api/me/wishlist/ + POST
+                /api/me/wishlist/
+              </button>
             </nav>
           </div>
         </div>

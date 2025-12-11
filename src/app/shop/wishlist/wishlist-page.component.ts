@@ -81,11 +81,11 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
                   <span class="text-xs font-medium text-slate-500"> ID: {{ item.id }} </span>
                 </div>
 
-                <h2
-                  class="mb-2 line-clamp-2 text-sm font-bold text-slate-900 group-hover:text-sky-600"
+                <h4
+                  class="mb-2 line-clamp-2 text-xs font-bold text-slate-900 group-hover:text-sky-600"
                 >
                   {{ item.name }}
-                </h2>
+                </h4>
 
                 <div class="mt-auto flex gap-2">
                   <button
