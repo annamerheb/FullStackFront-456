@@ -17,6 +17,7 @@ import * as WishlistActions from '../../state/wishlist/wishlist.actions';
 import { selectIsInWishlist } from '../../state/wishlist/wishlist.selectors';
 import { ShopApiService } from '../../services/shop-api.service';
 import { finalize } from 'rxjs/operators';
+import { ReviewsSectionComponent } from './reviews-section.component';
 
 @Component({
   standalone: true,
@@ -31,6 +32,7 @@ import { finalize } from 'rxjs/operators';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     ReactiveFormsModule,
+    ReviewsSectionComponent,
   ],
   template: `
     <div class="min-h-screen containerbg px-4 py-12">
@@ -179,6 +181,9 @@ import { finalize } from 'rxjs/operators';
         <div *ngIf="!product" class="flex justify-center py-20">
           <mat-spinner diameter="40"></mat-spinner>
         </div>
+
+        <!-- Reviews Section -->
+        <app-reviews-section *ngIf="product" [productId]="product.id"></app-reviews-section>
       </div>
     </div>
   `,

@@ -12,6 +12,7 @@ import { DevProfileComponent } from './dev/dev-profile.component';
 import { DevOrdersComponent } from './dev/dev-orders.component';
 import { DevOrderDetailsComponent } from './dev/dev-order-details.component';
 import { DevWishlistComponent } from './dev/dev-wishlist.component';
+import { DevReviewsComponent } from './dev/dev-reviews.component';
 import { AppPlaceholderComponent } from './app-placeholder.component';
 import { LoginPageComponent } from './pages/login-page.component';
 import { ProductsPageComponent } from './pages/products-page.component';
@@ -70,6 +71,7 @@ export const routes: Routes = [
   { path: 'dev/orders', component: DevOrdersComponent },
   { path: 'dev/order-details', component: DevOrderDetailsComponent },
   { path: 'dev/wishlist', component: DevWishlistComponent },
+  { path: 'dev/reviews', component: DevReviewsComponent },
   { path: 'app', component: AppPlaceholderComponent },
   { path: '**', redirectTo: '' },
 ];

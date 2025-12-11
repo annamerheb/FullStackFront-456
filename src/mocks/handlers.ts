@@ -107,6 +107,29 @@ let dynamicOrders: any[] = [
 
 let dynamicWishlist: number[] = [];
 
+const dynamicReviews: { [productId: number]: any[] } = {
+  1: [
+    {
+      id: 1,
+      productId: 1,
+      user: 'Alice',
+      userId: 1,
+      rating: 5,
+      comment: 'Excellent product! Very satisfied.',
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 2,
+      productId: 1,
+      user: 'Bob',
+      userId: 2,
+      rating: 4,
+      comment: 'Good quality, delivery was fast.',
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ],
+};
+
 export const handlers = [
   http.post(`${API}/auth/token/`, async () => {
     return HttpResponse.json(
@@ -448,5 +471,33 @@ export const handlers = [
     const body = (await request.json()) as { productIds: number[] };
     dynamicWishlist = body.productIds || [];
     return HttpResponse.json({ productIds: dynamicWishlist }, { status: 200 });
+  }),
+
+  http.get('/api/products/:id/reviews/', ({ params }) => {
+    const productId = Number(params['id']);
+    const reviews = dynamicReviews[productId] || [];
+    return HttpResponse.json({ results: reviews }, { status: 200 });
+  }),
+
+  http.post('/api/products/:id/reviews/', async ({ request, params }) => {
+    const productId = Number(params['id']);
+    const body = (await request.json()) as { rating: number; comment: string };
+
+    const newReview = {
+      id: Math.max(...(dynamicReviews[productId]?.map((r) => r.id) || [0])) + 1,
+      productId,
+      user: 'Current User',
+      userId: 1,
+      rating: body.rating,
+      comment: body.comment,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (!dynamicReviews[productId]) {
+      dynamicReviews[productId] = [];
+    }
+    dynamicReviews[productId].push(newReview);
+
+    return HttpResponse.json(newReview, { status: 201 });
   }),
 ];

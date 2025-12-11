@@ -17,12 +17,14 @@ import { wishlistReducer } from './state/wishlist/wishlist.reducer';
 import { discountsReducer } from './state/discounts/discounts.reducer';
 import { deliveryReducer } from './state/delivery/delivery.reducer';
 import { userReducer } from './state/user/user.reducer';
+import { reviewsReducer } from './state/reviews/reviews.reducer';
 import { AuthEffects } from './state/auth/auth.effects';
 import { ProductsEffects } from './state/products/products.effects';
 import { CartEffects } from './state/cart/cart.effects';
 import { WishlistEffects } from './state/wishlist/wishlist.effects';
 import { DiscountsEffects } from './state/discounts/discounts.effects';
 import { UserEffects } from './state/user/user.effects';
+import { ReviewsEffects } from './state/reviews/reviews.effects';
 import { authInterceptor } from './services/auth.interceptor';
 import { provideState } from '@ngrx/store';
 
@@ -38,6 +40,7 @@ export const appConfig: ApplicationConfig = {
     provideState('discounts', discountsReducer),
     provideState('delivery', deliveryReducer),
     provideState('user', userReducer),
+    provideState('reviews', reviewsReducer),
     provideEffects([
       AuthEffects,
       ProductsEffects,
@@ -45,6 +48,7 @@ export const appConfig: ApplicationConfig = {
       WishlistEffects,
       DiscountsEffects,
       UserEffects,
+      ReviewsEffects,
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
