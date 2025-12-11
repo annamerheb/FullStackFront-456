@@ -55,12 +55,12 @@ import { finalize } from 'rxjs/operators';
             <!-- Product Image -->
             <div class="flex items-center justify-center bg-slate-50 rounded-lg overflow-hidden">
               <img
-                *ngIf="product?.image"
+                *ngIf="product.image"
                 [src]="product.image"
                 [alt]="product.name"
                 class="h-full w-full object-cover"
               />
-              <div *ngIf="!product?.image" class="flex flex-col items-center py-12 text-slate-400">
+              <div *ngIf="!product.image" class="flex flex-col items-center py-12 text-slate-400">
                 <mat-icon class="text-6xl">image</mat-icon>
                 <p class="mt-2 text-sm">Product Image</p>
               </div>
@@ -173,7 +173,6 @@ import { finalize } from 'rxjs/operators';
   `,
   styles: [
     `
-      /* Snackbar styling */
       :host ::ng-deep .snackbar-success {
         background: white !important;
         border-radius: 8px !important;

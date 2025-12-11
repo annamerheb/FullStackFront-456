@@ -9,6 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { selectCartItems, selectCartTotal, selectCartCount } from '../../state/cart/cart.selectors';
 import { CartItem } from '../../state/cart/cart.models';
 import * as CartActions from '../../state/cart/cart.actions';
+import * as UserActions from '../../state/user/user.actions';
+import { ShopApiService } from '../../services/shop-api.service';
+import { selectUserLoading } from '../../state/user/user.selectors';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -140,13 +144,17 @@ export class CheckoutConfirmComponent implements OnInit {
   cartItems$: Observable<CartItem[]>;
   cartTotal$: Observable<number>;
   address: any;
+  private isSubmitting = false;
+  loading$: Observable<boolean>;
 
   constructor(
     private store: Store,
     private router: Router,
+    private shopApi: ShopApiService,
   ) {
     this.cartItems$ = this.store.select(selectCartItems);
     this.cartTotal$ = this.store.select(selectCartTotal);
+    this.loading$ = this.store.select(selectUserLoading);
   }
 
   ngOnInit() {
@@ -157,13 +165,48 @@ export class CheckoutConfirmComponent implements OnInit {
   }
 
   placeOrder() {
-    alert(
-      'Order placed successfully! Order #' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-    );
-    this.store.dispatch(CartActions.clearCart());
-    localStorage.removeItem('cart');
-    sessionStorage.removeItem('checkout_address');
-    this.router.navigate(['/shop/products']);
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+
+    this.cartItems$
+      .subscribe((items) => {
+        this.cartTotal$
+          .subscribe((total) => {
+            const orderPayload = {
+              items: items,
+              total_amount: total,
+              delivery_option: 'standard',
+              shipping_address: this.address || {},
+              payment_method: 'card',
+            };
+
+            this.shopApi.createOrder(orderPayload).subscribe({
+              next: (response: any) => {
+                alert('Order placed successfully! Order #' + response.order_number);
+                this.store.dispatch(CartActions.clearCart());
+                this.store.dispatch(UserActions.loadOrders({ page: 1, pageSize: 3 }));
+                localStorage.removeItem('cart');
+                sessionStorage.removeItem('checkout_address');
+
+                this.loading$
+                  .pipe(
+                    filter((isLoading) => !isLoading),
+                    take(1),
+                  )
+                  .subscribe(() => {
+                    this.router.navigate(['/account/orders']);
+                    this.isSubmitting = false;
+                  });
+              },
+              error: (error: any) => {
+                alert('Failed to place order: ' + (error.error?.message || error.message));
+                this.isSubmitting = false;
+              },
+            });
+          })
+          .unsubscribe();
+      })
+      .unsubscribe();
   }
 
   formatPrice(price: number | null | undefined): string {

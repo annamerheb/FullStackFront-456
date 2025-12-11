@@ -7,21 +7,13 @@ import {
   ProductsListResponse,
   ProductRatingResponse,
   Product,
+  UserProfileResponse,
+  OrdersListResponse,
+  OrderDetails,
+  User,
+  UserResponse,
 } from './types';
 
-/**
- * ShopApiService
- *
- * HTTP client for all API interactions with the backend.
- *
- * Base URL: /api/
- *
- * Endpoints:
- * - POST /api/auth/token/ - Login
- * - POST /api/auth/token/refresh/ - Refresh access token
- * - GET /api/products/ - List products with filters
- * - GET /api/products/:id/rating/ - Get product rating
- */
 @Injectable({
   providedIn: 'root',
 })
@@ -30,19 +22,6 @@ export class ShopApiService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Login with username and password
-   *
-   * @param username - User's username
-   * @param password - User's password
-   * @returns Observable of auth tokens (access + refresh)
-   *
-   * @example
-   * this.shopApi.login('demo', 'demo').subscribe(tokens => {
-   *   console.log('Access token:', tokens.access);
-   *   console.log('Refresh token:', tokens.refresh);
-   * });
-   */
   login(username: string, password: string): Observable<AuthTokenResponse> {
     const url = `${this.baseUrl}/auth/token/`;
     const body = { username, password };
@@ -50,17 +29,6 @@ export class ShopApiService {
     return this.http.post<AuthTokenResponse>(url, body);
   }
 
-  /**
-   * Refresh access token using refresh token
-   *
-   * @param refreshToken - Refresh token from login
-   * @returns Observable of new access token
-   *
-   * @example
-   * this.shopApi.refreshToken(refreshToken).subscribe(response => {
-   *   console.log('New access token:', response.access);
-   * });
-   */
   refreshToken(refreshToken: string): Observable<AuthRefreshResponse> {
     const url = `${this.baseUrl}/auth/token/refresh/`;
     const body = { refresh: refreshToken };
@@ -68,27 +36,6 @@ export class ShopApiService {
     return this.http.post<AuthRefreshResponse>(url, body);
   }
 
-  /**
-   * Get list of products with optional filters
-   *
-   * @param filters - Optional filters for products
-   * @param filters.page - Page number (0-indexed)
-   * @param filters.pageSize - Products per page
-   * @param filters.minRating - Minimum average rating
-   * @param filters.ordering - Sort field: 'price', '-price', 'name', etc.
-   * @returns Observable of products list
-   *
-   * @example
-   * this.shopApi.getProducts({
-   *   page: 0,
-   *   pageSize: 6,
-   *   minRating: 3,
-   *   ordering: 'price'
-   * }).subscribe(response => {
-   *   console.log('Total products:', response.count);
-   *   console.log('Current page:', response.results);
-   * });
-   */
   getProducts(filters?: {
     page?: number;
     pageSize?: number;
@@ -117,38 +64,77 @@ export class ShopApiService {
     return this.http.get<ProductsListResponse>(url, { params });
   }
 
-  /**
-   * Get a specific product by ID
-   *
-   * @param productId - Product ID
-   * @returns Observable of product details
-   *
-   * @example
-   * this.shopApi.getProduct(1).subscribe(product => {
-   *   console.log('Product:', product.name);
-   * });
-   */
   getProduct(productId: number): Observable<Product> {
     const url = `${this.baseUrl}/products/${productId}/`;
     console.log(`[API] GET ${url}`);
     return this.http.get<Product>(url);
   }
 
-  /**
-   * Get rating for a specific product
-   *
-   * @param productId - Product ID
-   * @returns Observable of product rating data
-   *
-   * @example
-   * this.shopApi.getProductRating(1).subscribe(rating => {
-   *   console.log('Average rating:', rating.avg_rating);
-   *   console.log('Number of reviews:', rating.count);
-   * });
-   */
   getProductRating(productId: number): Observable<ProductRatingResponse> {
     const url = `${this.baseUrl}/products/${productId}/rating/`;
     console.log(`[API] GET ${url}`);
     return this.http.get<ProductRatingResponse>(url);
+  }
+
+  getUserProfile(): Observable<UserProfileResponse> {
+    const url = `${this.baseUrl}/user/profile/`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<UserProfileResponse>(url);
+  }
+
+  updateUserProfile(userUpdate: Partial<User>): Observable<UserProfileResponse> {
+    const url = `${this.baseUrl}/user/profile/`;
+    console.log(`[API] PATCH ${url}`, userUpdate);
+    return this.http.patch<UserProfileResponse>(url, userUpdate);
+  }
+
+  getUserOrders(page: number = 1, pageSize: number = 10): Observable<OrdersListResponse> {
+    const url = `${this.baseUrl}/user/orders/`;
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', pageSize.toString());
+
+    console.log(`[API] GET ${url}`, params);
+    return this.http.get<OrdersListResponse>(url, { params });
+  }
+
+  getOrderDetails(orderId: string): Observable<OrderDetails> {
+    const url = `${this.baseUrl}/user/orders/${orderId}/`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<OrderDetails>(url);
+  }
+
+  getMe(): Observable<UserResponse> {
+    const url = `${this.baseUrl}/me/`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<UserResponse>(url);
+  }
+
+  updateMe(userUpdate: Partial<User>): Observable<UserResponse> {
+    const url = `${this.baseUrl}/me/`;
+    console.log(`[API] PATCH ${url}`, userUpdate);
+    return this.http.patch<UserResponse>(url, userUpdate);
+  }
+
+  getMyOrders(page: number = 1, pageSize: number = 10): Observable<OrdersListResponse> {
+    const url = `${this.baseUrl}/me/orders/`;
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', pageSize.toString());
+
+    console.log(`[API] GET ${url}`, params);
+    return this.http.get<OrdersListResponse>(url, { params });
+  }
+
+  getOrder(orderId: string): Observable<OrderDetails> {
+    const url = `${this.baseUrl}/orders/${orderId}`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<OrderDetails>(url);
+  }
+
+  createOrder(orderPayload: any): Observable<any> {
+    const url = `${this.baseUrl}/order/`;
+    console.log(`[API] POST ${url}`, orderPayload);
+    return this.http.post<any>(url, orderPayload);
   }
 }

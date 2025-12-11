@@ -87,6 +87,30 @@ import { MatIconModule } from '@angular/material/icon';
                 <span class="font-medium">Create Order:</span>&nbsp;POST /api/order/ (confirmation
                 #)
               </button>
+              <button
+                type="button"
+                routerLink="/dev/profile"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">User Profile:</span>&nbsp;GET /api/me/ + PATCH /api/me/
+              </button>
+              <button
+                type="button"
+                routerLink="/dev/orders"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">User Orders:</span>&nbsp;GET /api/me/orders/
+              </button>
+              <button
+                type="button"
+                routerLink="/dev/order-details"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">Order Details:</span>&nbsp;GET /api/orders/:id/
+              </button>
             </nav>
           </div>
         </div>

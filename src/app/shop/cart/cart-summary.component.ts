@@ -179,7 +179,6 @@ export class CartSummaryComponent implements OnInit {
   selectedDelivery$;
   deliveryCost$;
 
-  // Combined observable for all values
   summary$;
 
   constructor(private store: Store) {
@@ -189,7 +188,6 @@ export class CartSummaryComponent implements OnInit {
     this.selectedDelivery$ = this.store.select(selectSelectedDeliveryOption);
     this.deliveryCost$ = this.store.select(selectDeliveryOptionCost);
 
-    // Single combined observable to avoid multiple async issues
     this.summary$ = combineLatest([
       this.store.select(selectCartTotal),
       this.discountAmount$,

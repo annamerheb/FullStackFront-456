@@ -222,7 +222,6 @@ import { CartItem } from '../../state/cart/cart.models';
         animation: slideIn 0.3s ease-out;
       }
 
-      /* Smooth transition for quantity changes */
       .qty-input {
         transition: background-color 0.2s ease;
       }

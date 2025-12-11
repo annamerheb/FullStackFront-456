@@ -36,13 +36,11 @@ import { inject } from '@angular/core';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const store = inject(Store);
 
-  // Get the access token from store
   return store.select(selectAccessToken).pipe(
     take(1),
     switchMap((token) => {
       let authReq = req;
 
-      // If token exists, clone request and add Authorization header
       if (token) {
         authReq = req.clone({
           setHeaders: {

@@ -323,7 +323,6 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
       this.totalProducts = count;
     });
 
-    // Subscribe to wishlist items to keep track
     this.store
       .select(selectWishlistItems)
       .pipe(takeUntil(this.destroy$))
@@ -335,7 +334,6 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.applyFilters();
 
-    // Subscribe to form value changes to automatically apply filters
     this.filterForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.currentPage = 0;
       this.pageSize = Number(this.filterForm.get('pageSize')?.value) || 6;

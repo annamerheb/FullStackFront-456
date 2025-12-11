@@ -5,6 +5,106 @@ import { paginate, avgRating } from './utils';
 
 const API = '/api';
 
+const sanitizeOrder = (order: any) => ({
+  id: order.id || '',
+  status: order.status || 'pending',
+  orderDate: String(order.created_at || new Date().toISOString()),
+  totalPrice: Number(order.total_amount || 0),
+  itemCount: Number(order.items_count || 0),
+  trackingNumber: order.tracking_number || '',
+  estimatedDelivery: String(order.expected_delivery || new Date().toISOString()),
+  items: Array.isArray(order.items)
+    ? order.items.map((item: any) => ({
+        productId: Number(item.product_id || 0),
+        productName: String(item.product_name || ''),
+        quantity: Number(item.quantity || 0),
+        price: Number(item.price || 0),
+      }))
+    : [],
+  shippingAddress: {
+    street: order.shipping_address?.street || '',
+    city: order.shipping_address?.city || '',
+    postalCode: order.shipping_address?.postalCode || '',
+    country: order.shipping_address?.country || '',
+  },
+  billingAddress: {
+    street: order.billing_address?.street || '',
+    city: order.billing_address?.city || '',
+    postalCode: order.billing_address?.postalCode || '',
+    country: order.billing_address?.country || '',
+  },
+});
+
+let dynamicUser: any = {
+  id: 'user-demo-123',
+  username: 'demo',
+  email: 'demo@example.com',
+  fullName: 'Demo User',
+  preferences: {
+    newsletter: true,
+    defaultMinRating: 3.0,
+  },
+  defaultAddress: {
+    street: '123 Main Street',
+    city: 'Paris',
+    postalCode: '75001',
+    country: 'France',
+  },
+  createdAt: '2024-01-15T10:30:00Z',
+};
+
+let dynamicOrders: any[] = [
+  {
+    id: 'order-001',
+    order_number: 'ORD-ABC123456',
+    status: 'delivered',
+    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    expected_delivery: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    total_amount: 159.99,
+    items_count: 3,
+    delivery_option: 'standard',
+    tracking_number: 'TRK-ABC123456789',
+    items: [
+      {
+        id: 1,
+        product_id: 1,
+        product_name: 'Stylo Bleu',
+        quantity: 2,
+        price: 2.5,
+        line_total: 5.0,
+      },
+      {
+        id: 2,
+        product_id: 2,
+        product_name: 'Cahier A4',
+        quantity: 1,
+        price: 8.99,
+        line_total: 8.99,
+      },
+      {
+        id: 3,
+        product_id: 3,
+        product_name: 'Crayon HB',
+        quantity: 10,
+        price: 14.5,
+        line_total: 145.0,
+      },
+    ],
+    shipping_address: {
+      street: '123 Main Street',
+      city: 'Paris',
+      postalCode: '75001',
+      country: 'France',
+    },
+    billing_address: {
+      street: '123 Main Street',
+      city: 'Paris',
+      postalCode: '75001',
+      country: 'France',
+    },
+  },
+];
+
 export const handlers = [
   http.post(`${API}/auth/token/`, async () => {
     return HttpResponse.json(
@@ -114,25 +214,227 @@ export const handlers = [
     const body = (await request.json()) as any;
 
     const orderNumber = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    const orderId = Math.floor(Math.random() * 10000) + 1000;
+    const orderId = 'order-' + Math.random().toString(36).substr(2, 10);
+
+    const orderItems = (body.items || []).map((item: any, idx: number) => ({
+      id: idx + 1,
+      product_id: item.product?.id || item.product_id,
+      product_name: item.product?.name || item.product_name,
+      quantity: item.quantity,
+      price: item.product?.price || item.price,
+      line_total: (item.product?.price || item.price) * item.quantity,
+    }));
+
+    const newOrder = {
+      id: orderId,
+      order_number: orderNumber,
+      status: 'processing',
+      created_at: new Date().toISOString(),
+      expected_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      total_amount: body.total_amount || 0,
+      items_count: body.items?.length || 0,
+      delivery_option: body.delivery_option || 'standard',
+      tracking_number: 'TRK-' + Math.random().toString(36).substr(2, 10).toUpperCase(),
+      items: orderItems,
+      shipping_address: body.shipping_address || {},
+      billing_address: body.shipping_address || {},
+    };
+
+    dynamicOrders.unshift(newOrder);
 
     return HttpResponse.json(
       {
         order_id: orderId,
         order_number: orderNumber,
         status: 'confirmed',
-        created_at: new Date().toISOString(),
-        expected_delivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: newOrder.created_at,
+        expected_delivery: newOrder.expected_delivery,
         total_amount: body.total_amount || 0,
         items_count: body.items?.length || 0,
         shipping_address: body.shipping_address || {},
         delivery_option: body.delivery_option || 'standard',
         coupon_applied: body.coupon_code || null,
         payment_method: body.payment_method || 'card',
-        tracking_number: 'TRK-' + Math.random().toString(36).substr(2, 10).toUpperCase(),
+        tracking_number: newOrder.tracking_number,
         message: 'Your order has been confirmed! You will receive an email confirmation shortly.',
       },
       { status: 201 },
     );
+  }),
+  http.get(`${API}/user/profile/`, async () => {
+    const orderSummaries = dynamicOrders.map((order) => ({
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status,
+      created_at: order.created_at,
+      total_amount: order.total_amount,
+      items_count: order.items_count,
+      delivery_option: order.delivery_option,
+    }));
+
+    return HttpResponse.json(
+      {
+        user: {
+          id: 'user-demo-123',
+          username: 'demo',
+          email: 'demo@example.com',
+          fullName: 'Demo User',
+          preferences: {
+            newsletter: true,
+            defaultMinRating: 3.0,
+          },
+          defaultAddress: {
+            street: '123 Main Street',
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
+          },
+          orders: orderSummaries,
+          createdAt: '2024-01-15T10:30:00Z',
+        },
+      },
+      { status: 200 },
+    );
+  }),
+  http.patch(`${API}/user/profile/`, async ({ request }) => {
+    const body = (await request.json()) as any;
+
+    return HttpResponse.json(
+      {
+        user: {
+          id: 'user-demo-123',
+          username: 'demo',
+          email: 'demo@example.com',
+          fullName: body.fullName || 'Demo User',
+          preferences: body.preferences || {
+            newsletter: true,
+            defaultMinRating: 3.0,
+          },
+          defaultAddress: body.defaultAddress || {
+            street: '123 Main Street',
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
+          },
+          orders: [],
+          createdAt: '2024-01-15T10:30:00Z',
+        },
+      },
+      { status: 200 },
+    );
+  }),
+  http.get(`${API}/user/orders/`, async ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '10');
+
+    const allOrders = dynamicOrders.map((order) => ({
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status,
+      created_at: order.created_at,
+      total_amount: order.total_amount,
+      items_count: order.items_count,
+      delivery_option: order.delivery_option,
+    }));
+
+    const { count, results } = paginate(allOrders, page, pageSize);
+
+    return HttpResponse.json(
+      {
+        count,
+        next: null,
+        previous: null,
+        results,
+      },
+      { status: 200 },
+    );
+  }),
+  http.get('/api/user/orders/:id', ({ params }) => {
+    const orderId = params['id'] as string;
+    const order = dynamicOrders.find((o) => o.id === orderId);
+
+    if (!order) {
+      return HttpResponse.json({ detail: 'Order not found.' }, { status: 404 });
+    }
+
+    const sanitized = sanitizeOrder(order);
+    return HttpResponse.json(sanitized);
+  }),
+  http.get(`${API}/me/`, async () => {
+    const orderSummaries = dynamicOrders.map((order) => ({
+      id: order.id,
+      status: order.status,
+      orderDate: order.created_at,
+      totalPrice: order.total_amount,
+      itemCount: order.items_count,
+    }));
+
+    return HttpResponse.json(
+      {
+        ...dynamicUser,
+        orders: orderSummaries,
+      },
+      { status: 200 },
+    );
+  }),
+  http.patch(`${API}/me/`, async ({ request }) => {
+    const body = (await request.json()) as any;
+
+    if (body.fullName) {
+      dynamicUser.fullName = body.fullName;
+    }
+    if (body.preferences) {
+      dynamicUser.preferences = { ...dynamicUser.preferences, ...body.preferences };
+    }
+    if (body.defaultAddress) {
+      dynamicUser.defaultAddress = { ...dynamicUser.defaultAddress, ...body.defaultAddress };
+    }
+
+    return HttpResponse.json(
+      {
+        ...dynamicUser,
+        orders: [],
+      },
+      { status: 200 },
+    );
+  }),
+  http.get(`${API}/me/orders/`, async ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '10');
+
+    const allOrders = dynamicOrders.map((order) => ({
+      id: order.id,
+      status: order.status,
+      orderDate: order.created_at,
+      totalPrice: order.total_amount,
+      itemCount: order.items_count,
+    }));
+
+    const { count, results } = paginate(allOrders, page, pageSize);
+
+    return HttpResponse.json(
+      {
+        count,
+        next: null,
+        previous: null,
+        results,
+      },
+      { status: 200 },
+    );
+  }),
+  http.get('/api/orders/:id', ({ params }) => {
+    const orderId = params['id'] as string;
+
+    const order = dynamicOrders.find((o) => o.id === orderId);
+
+    if (!order) {
+      console.log('Order not found:', orderId);
+      return HttpResponse.json({ detail: 'Order not found.' }, { status: 404 });
+    }
+
+    const sanitized = sanitizeOrder(order);
+    return HttpResponse.json(sanitized);
   }),
 ];

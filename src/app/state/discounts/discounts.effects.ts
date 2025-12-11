@@ -6,7 +6,6 @@ import * as DiscountsActions from './discounts.actions';
 import { selectCartTotal } from '../cart/cart.selectors';
 import { Store } from '@ngrx/store';
 
-// Coupon database
 const VALID_COUPONS: Record<string, { discount: number; type: 'percentage' | 'fixed' }> = {
   SAVE10: { discount: 10, type: 'percentage' },
   SAVE15: { discount: 15, type: 'percentage' },
@@ -34,7 +33,6 @@ export class DiscountsEffects {
           );
         }
 
-        // Get current cart total and calculate discount
         return this.store.select(selectCartTotal).pipe(
           take(1),
           map((total) => {

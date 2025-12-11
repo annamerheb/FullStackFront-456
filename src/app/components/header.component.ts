@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { selectCartCount } from '../state/cart/cart.selectors';
 import { selectWishlistCount } from '../state/wishlist/wishlist.selectors';
 import { selectIsAuthenticated } from '../state/auth/auth.selectors';
@@ -22,6 +23,7 @@ import * as AuthActions from '../state/auth/auth.actions';
     MatIconModule,
     MatBadgeModule,
     MatMenuModule,
+    MatDividerModule,
   ],
   template: `
     <header
@@ -125,17 +127,18 @@ import * as AuthActions from '../state/auth/auth.actions';
           </button>
 
           <mat-menu #userMenu="matMenu">
+            <button mat-menu-item routerLink="/account">
+              <mat-icon>person</mat-icon>
+              <span>Mon Compte</span>
+            </button>
+            <button mat-menu-item routerLink="/account/orders">
+              <mat-icon>receipt_long</mat-icon>
+              <span>Mes Commandes</span>
+            </button>
+            <mat-divider></mat-divider>
             <button mat-menu-item (click)="logout()">
               <mat-icon>logout</mat-icon>
               <span>Logout</span>
-            </button>
-            <button mat-menu-item routerLink="/shop/wishlist">
-              <mat-icon>favorite</mat-icon>
-              <span>My Wishlist</span>
-            </button>
-            <button mat-menu-item routerLink="/shop/cart">
-              <mat-icon>shopping_cart</mat-icon>
-              <span>My Cart</span>
             </button>
           </mat-menu>
         </div>
