@@ -137,6 +137,14 @@ import { MatIconModule } from '@angular/material/icon';
               >
                 <span class="font-medium">Reviews:</span>&nbsp;GET /api/products/:id/reviews/ + POST
               </button>
+              <button
+                type="button"
+                routerLink="/dev/admin-stats"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">Admin Stats:</span>&nbsp;GET /api/admin/stats/
+              </button>
             </nav>
           </div>
         </div>

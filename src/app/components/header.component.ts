@@ -49,6 +49,12 @@ import * as AuthActions from '../state/auth/auth.actions';
             routerLink="/app"
             class="text-sm font-medium text-slate-600 transition hover:text-sky-600 cursor-pointer"
           >
+            App
+          </button>
+          <button
+            routerLink="/admin/dashboard"
+            class="text-sm font-medium text-slate-600 transition hover:text-sky-600 cursor-pointer"
+          >
             Dashboard
           </button>
           <button

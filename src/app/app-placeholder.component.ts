@@ -29,6 +29,31 @@ import { Observable } from 'rxjs';
 
         <section class="features-grid">
           <mat-card class="feature-card">
+            <mat-icon class="feature-icon">person</mat-icon>
+            <h3>Mon profil</h3>
+            <p>Voir et mettre à jour vos informations personnelles.</p>
+            <button
+              mat-stroked-button
+              routerLink="/account/profile"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
+            >
+              Voir le profil
+            </button>
+          </mat-card>
+
+          <mat-card class="feature-card">
+            <mat-icon class="feature-icon">receipt_long</mat-icon>
+            <h3>Commandes récentes</h3>
+            <p>Retrouvez vos dernières commandes sans quitter cette page.</p>
+            <button
+              mat-stroked-button
+              routerLink="/account/orders"
+              class="!border-sky-500 !text-sky-600 hover:!bg-sky-50"
+            >
+              Voir mes commandes
+            </button>
+          </mat-card>
+          <mat-card class="feature-card">
             <mat-icon class="feature-icon">login</mat-icon>
             <h3>Sign In</h3>
             <p>Access your account with the demo credentials <code>demo/demo</code>.</p>

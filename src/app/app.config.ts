@@ -25,6 +25,8 @@ import { WishlistEffects } from './state/wishlist/wishlist.effects';
 import { DiscountsEffects } from './state/discounts/discounts.effects';
 import { UserEffects } from './state/user/user.effects';
 import { ReviewsEffects } from './state/reviews/reviews.effects';
+import { AdminEffects } from './state/admin/admin.effects';
+import { adminReducer } from './state/admin/admin.reducer';
 import { authInterceptor } from './services/auth.interceptor';
 import { provideState } from '@ngrx/store';
 
@@ -41,6 +43,7 @@ export const appConfig: ApplicationConfig = {
     provideState('delivery', deliveryReducer),
     provideState('user', userReducer),
     provideState('reviews', reviewsReducer),
+    provideState('admin', adminReducer),
     provideEffects([
       AuthEffects,
       ProductsEffects,
@@ -49,6 +52,7 @@ export const appConfig: ApplicationConfig = {
       DiscountsEffects,
       UserEffects,
       ReviewsEffects,
+      AdminEffects,
     ]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],

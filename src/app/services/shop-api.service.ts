@@ -149,4 +149,10 @@ export class ShopApiService {
     console.log(`[API] POST ${url}`, { productIds });
     return this.http.post<{ productIds: number[] }>(url, { productIds });
   }
+
+  getAdminStats(): Observable<any> {
+    const url = `${this.baseUrl}/admin/stats/`;
+    console.log(`[API] GET ${url}`);
+    return this.http.get<any>(url);
+  }
 }

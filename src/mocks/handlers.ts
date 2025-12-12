@@ -625,4 +625,41 @@ export const handlers = [
       { status: 200 },
     );
   }),
+
+  // Admin Stats Endpoint
+  http.get(`${API}/admin/stats/`, async () => {
+    // Calculate stats from dynamic data
+    const totalUsers = 42;
+    const totalOrders = dynamicOrders.length;
+    const totalRevenue = dynamicOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+    // Top products (mock data)
+    const topProducts = [
+      { productId: '1', name: 'Premium Headphones', sold: 245, revenue: 12250 },
+      { productId: '2', name: 'Wireless Charger', sold: 189, revenue: 5670 },
+      { productId: '3', name: 'Phone Case', sold: 412, revenue: 2472 },
+      { productId: '4', name: 'Screen Protector', sold: 328, revenue: 1640 },
+      { productId: '5', name: 'USB-C Cable', sold: 567, revenue: 2835 },
+    ];
+
+    // Recent orders
+    const recentOrders = dynamicOrders.slice(0, 5).map((order) => ({
+      id: order.order_number,
+      user: 'demo@example.com',
+      total: order.total_amount || 0,
+      createdAt: order.created_at,
+      status: order.status,
+    }));
+
+    return HttpResponse.json(
+      {
+        totalUsers,
+        totalOrders,
+        totalRevenue,
+        topProducts,
+        recentOrders,
+      },
+      { status: 200 },
+    );
+  }),
 ];

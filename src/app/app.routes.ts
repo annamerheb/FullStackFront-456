@@ -3,6 +3,7 @@ import { authGuard } from './guards/auth.guard';
 import { HomeComponent } from './home.component';
 import { DevIndexComponent } from './dev/dev-index.component';
 import { DevAuthComponent } from './dev/dev-auth.component';
+import { DevAdminStatsComponent } from './dev/dev-admin-stats.component';
 import { DevProductsComponent } from './dev/dev-products.component';
 import { DevProductRatingComponent } from './dev/dev-product-rating.component';
 import { DevProductDetailsComponent } from './dev/dev-product-details.component';
@@ -28,6 +29,7 @@ import { ProfilePageComponent } from './pages/account/profile-page.component';
 import { OrdersPageComponent } from './pages/account/orders-page.component';
 import { OrderDetailsPageComponent } from './pages/account/order-details-page.component';
 import { AccountHomeComponent } from './pages/account/account-home.component';
+import { AdminDashboardComponent } from './pages/admin/dashboard-page.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -61,6 +63,11 @@ export const routes: Routes = [
       { path: 'orders/:id', component: OrderDetailsPageComponent },
     ],
   },
+  {
+    path: 'admin',
+    canActivate: [authGuard],
+    children: [{ path: 'dashboard', component: AdminDashboardComponent }],
+  },
   { path: 'dev', component: DevIndexComponent },
   { path: 'dev/auth', component: DevAuthComponent },
   { path: 'dev/products', component: DevProductsComponent },
@@ -74,6 +81,7 @@ export const routes: Routes = [
   { path: 'dev/order-details', component: DevOrderDetailsComponent },
   { path: 'dev/wishlist', component: DevWishlistComponent },
   { path: 'dev/reviews', component: DevReviewsComponent },
+  { path: 'dev/admin-stats', component: DevAdminStatsComponent },
   { path: 'app', component: AppPlaceholderComponent },
   { path: '**', redirectTo: '' },
 ];
