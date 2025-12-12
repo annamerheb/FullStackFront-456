@@ -10,3 +10,18 @@ export const selectCartTotal = createSelector(selectCartFeature, (state) => stat
 export const selectCartCount = createSelector(selectCartFeature, (state) => state.itemCount);
 
 export const selectCartEmpty = createSelector(selectCartCount, (count) => count === 0);
+
+export const selectStockValidationErrors = createSelector(
+  selectCartFeature,
+  (state) => state.stockValidationErrors,
+);
+
+export const selectIsValidatingStock = createSelector(
+  selectCartFeature,
+  (state) => state.isValidatingStock,
+);
+
+export const selectHasStockErrors = createSelector(
+  selectStockValidationErrors,
+  (errors) => errors.length > 0,
+);

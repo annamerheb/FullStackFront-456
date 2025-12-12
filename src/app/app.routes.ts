@@ -7,6 +7,7 @@ import { DevProductsComponent } from './dev/dev-products.component';
 import { DevProductRatingComponent } from './dev/dev-product-rating.component';
 import { DevProductDetailsComponent } from './dev/dev-product-details.component';
 import { DevCartValidateComponent } from './dev/dev-cart-validate.component';
+import { DevStockValidateComponent } from './dev/dev-stock-validate.component';
 import { DevOrderComponent } from './dev/dev-order.component';
 import { DevProfileComponent } from './dev/dev-profile.component';
 import { DevOrdersComponent } from './dev/dev-orders.component';
@@ -66,6 +67,7 @@ export const routes: Routes = [
   { path: 'dev/products/:id', component: DevProductDetailsComponent },
   { path: 'dev/products/:id/rating', component: DevProductRatingComponent },
   { path: 'dev/cart-validate', component: DevCartValidateComponent },
+  { path: 'dev/stock-validate', component: DevStockValidateComponent },
   { path: 'dev/order', component: DevOrderComponent },
   { path: 'dev/profile', component: DevProfileComponent },
   { path: 'dev/orders', component: DevOrdersComponent },

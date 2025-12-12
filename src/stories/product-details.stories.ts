@@ -53,6 +53,7 @@ const mockProduct = {
   image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
   avgRating: 4.8,
   stock: 45,
+  lowStockThreshold: 15,
   discount: 15,
 };
 
@@ -64,6 +65,7 @@ const lowStockProduct = {
   image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
   avgRating: 4.6,
   stock: 3,
+  lowStockThreshold: 10,
   discount: 20,
 };
 
@@ -75,6 +77,7 @@ const outOfStockProduct = {
   image: 'https://images.unsplash.com/photo-1606933248051-5ce98a0764b2?w=800',
   avgRating: 4.4,
   stock: 0,
+  lowStockThreshold: 20,
   discount: 0,
 };
 
@@ -86,6 +89,7 @@ const noImageProduct = {
   image: '',
   avgRating: 3.5,
   stock: 100,
+  lowStockThreshold: 25,
   discount: 5,
 };
 

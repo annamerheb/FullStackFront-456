@@ -1,59 +1,92 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of } from 'rxjs';
-import { map, catchError, switchMap, take } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { of, EMPTY } from 'rxjs';
+import { map, catchError, switchMap, tap, filter, take } from 'rxjs/operators';
 import * as DiscountsActions from './discounts.actions';
-import { selectCartTotal } from '../cart/cart.selectors';
+import * as DeliveryActions from '../delivery/delivery.actions';
+import { selectCartItems } from '../cart/cart.selectors';
+import {
+  selectSelectedDeliveryOption,
+  selectDeliveryOptionCost,
+} from '../delivery/delivery.selectors';
 import { Store } from '@ngrx/store';
-
-const VALID_COUPONS: Record<string, { discount: number; type: 'percentage' | 'fixed' }> = {
-  SAVE10: { discount: 10, type: 'percentage' },
-  SAVE15: { discount: 15, type: 'percentage' },
-  SAVE20: { discount: 20, type: 'percentage' },
-  WELCOME: { discount: 5, type: 'percentage' },
-};
+import { combineLatest } from 'rxjs';
 
 @Injectable()
 export class DiscountsEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store);
+  private readonly http = inject(HttpClient);
 
   applyCoupon$ = createEffect(() =>
     this.actions$.pipe(
       ofType(DiscountsActions.applyCoupon),
       switchMap(({ code }) => {
-        const upperCode = code.toUpperCase().trim();
-        const couponData = VALID_COUPONS[upperCode];
+        return combineLatest([
+          this.store.select(selectCartItems),
+          this.store.select(selectDeliveryOptionCost),
+        ]).pipe(
+          take(1), // Only take the first emission, don't re-trigger on changes
+          switchMap(([items, shippingCost]) => {
+            // Format items for the API
+            const apiItems = items.map((item: any) => ({
+              product: item.product,
+              quantity: item.quantity,
+            }));
 
-        if (!couponData) {
-          return of(
-            DiscountsActions.applyCouponFailure({
-              error: `Invalid coupon code: "${code}". Try SAVE10, SAVE15, SAVE20, or WELCOME.`,
-            }),
-          );
-        }
-
-        return this.store.select(selectCartTotal).pipe(
-          take(1),
-          map((total) => {
-            const discountAmount =
-              couponData.type === 'percentage'
-                ? (total * couponData.discount) / 100
-                : couponData.discount;
-
-            const coupon = {
-              code: upperCode,
-              discount: couponData.discount,
-              type: couponData.type,
+            const payload = {
+              items: apiItems,
+              promo_code: code,
+              shipping: shippingCost || 10,
             };
 
-            return DiscountsActions.applyCouponSuccess({
-              coupon,
-              discountAmount,
-            });
+            return this.http.post<any>('/api/cart/apply-promo/', payload).pipe(
+              map((response) => {
+                const coupon = {
+                  code: code.toUpperCase(),
+                  discount: response.discount,
+                  type: 'fixed' as const,
+                };
+
+                // Dispatch free shipping action if the code is FREESHIP
+                if (code.toUpperCase() === 'FREESHIP') {
+                  this.store.dispatch(DeliveryActions.setFreeShipping());
+                } else {
+                  this.store.dispatch(DeliveryActions.clearFreeShipping());
+                }
+
+                return DiscountsActions.applyCouponSuccess({
+                  coupon,
+                  discountAmount: response.discount,
+                });
+              }),
+              catchError((error) => {
+                this.store.dispatch(DeliveryActions.clearFreeShipping());
+                return of(
+                  DiscountsActions.applyCouponFailure({
+                    error:
+                      error.error?.error ||
+                      `Invalid promo code: "${code}". Try WELCOME10, FREESHIP, or VIP20.`,
+                  }),
+                );
+              }),
+            );
           }),
         );
       }),
     ),
+  );
+
+  removeCoupon$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(DiscountsActions.removeCoupon),
+        tap(() => {
+          // Immediately dispatch clearFreeShipping to ensure delivery state is updated
+          this.store.dispatch(DeliveryActions.clearFreeShipping());
+        }),
+      ),
+    { dispatch: false },
   );
 }

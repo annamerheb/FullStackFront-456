@@ -18,6 +18,7 @@ import { selectIsInWishlist } from '../../state/wishlist/wishlist.selectors';
 import { ShopApiService } from '../../services/shop-api.service';
 import { finalize } from 'rxjs/operators';
 import { ReviewsSectionComponent } from './reviews-section.component';
+import { isInStock, getStockStatus, StockStatus } from '../../services/stock.utils';
 
 @Component({
   standalone: true,
@@ -132,15 +133,28 @@ import { ReviewsSectionComponent } from './reviews-section.component';
                   <div
                     class="inline-flex items-center gap-2 px-3 py-2 rounded-lg font-semibold"
                     [ngClass]="{
-                      'bg-green-100 text-green-700': product.stock > 20,
-                      'bg-yellow-100 text-yellow-700': product.stock > 5 && product.stock <= 20,
-                      'bg-red-100 text-red-700': product.stock <= 5,
+                      'bg-green-100 text-green-700':
+                        product &&
+                        getStockStatus(product.stock, product.lowStockThreshold).status ===
+                          StockStatus.IN_STOCK,
+                      'bg-yellow-100 text-yellow-700':
+                        product &&
+                        getStockStatus(product.stock, product.lowStockThreshold).status ===
+                          StockStatus.LOW_STOCK,
+                      'bg-slate-100 text-slate-700':
+                        product &&
+                        getStockStatus(product.stock, product.lowStockThreshold).status ===
+                          StockStatus.OUT_OF_STOCK,
                     }"
                   >
                     <mat-icon class="text-sm">{{
-                      product.stock > 0 ? 'check_circle' : 'error'
+                      product && product.stock > 0 ? 'check_circle' : 'error'
                     }}</mat-icon>
-                    <span>{{ product.stock }} in stock</span>
+                    <span>{{
+                      product
+                        ? getStockStatus(product.stock, product.lowStockThreshold).label
+                        : 'Loading...'
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -148,10 +162,30 @@ import { ReviewsSectionComponent } from './reviews-section.component';
               <!-- Add to Cart Form -->
               <form [formGroup]="addToCartForm" (ngSubmit)="addToCart()" class="space-y-3">
                 <div>
-                  <label class="block text-sm font-semibold text-slate-900 mb-2">Quantity</label>
+                  <label class="block text-sm font-semibold text-slate-900 mb-2">Quantité</label>
                   <mat-form-field appearance="fill" class="w-full">
-                    <input matInput type="number" min="1" max="100" formControlName="quantity" />
+                    <input
+                      matInput
+                      type="number"
+                      min="1"
+                      [max]="product.stock"
+                      formControlName="quantity"
+                    />
+                    <mat-error *ngIf="addToCartForm.get('quantity')?.hasError('required')">
+                      La quantité est requise
+                    </mat-error>
+                    <mat-error *ngIf="addToCartForm.get('quantity')?.hasError('min')">
+                      La quantité doit être au moins 1
+                    </mat-error>
+                    <mat-error *ngIf="addToCartForm.get('quantity')?.hasError('max')">
+                      Stock insuffisant pour le produit {{ product.name }}. Maximum disponible:
+                      {{ product.stock }}
+                    </mat-error>
                   </mat-form-field>
+                  <p class="text-xs text-slate-500 mt-2" *ngIf="product">
+                    Stock disponible:
+                    <span class="font-semibold">{{ product.stock }}</span> article(s)
+                  </p>
                 </div>
 
                 <button
@@ -159,10 +193,10 @@ import { ReviewsSectionComponent } from './reviews-section.component';
                   color="primary"
                   type="submit"
                   class="w-full h-12 !rounded-lg !font-semibold"
-                  [disabled]="addToCartForm.invalid"
+                  [disabled]="addToCartForm.invalid || !product || product.stock === 0"
                 >
                   <mat-icon>shopping_cart</mat-icon>
-                  Add to Cart
+                  {{ product && product.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier' }}
                 </button>
 
                 <button
@@ -170,7 +204,7 @@ import { ReviewsSectionComponent } from './reviews-section.component';
                   routerLink="/shop/cart"
                   class="w-full h-11 !rounded-lg !font-semibold !border-sky-500 !text-sky-600 hover:!bg-sky-50"
                 >
-                  View Your Cart
+                  Voir votre panier
                 </button>
               </form>
             </div>
@@ -253,6 +287,10 @@ export class ProductDetailsPageComponent implements OnInit {
   addToCartForm: FormGroup;
   isInWishlist$!: Observable<boolean>;
 
+  // Stock utilities
+  getStockStatus = getStockStatus;
+  StockStatus = StockStatus;
+
   constructor(
     private route: ActivatedRoute,
     private store: Store,
@@ -261,7 +299,7 @@ export class ProductDetailsPageComponent implements OnInit {
     private snackBar: MatSnackBar,
   ) {
     this.addToCartForm = this.fb.group({
-      quantity: [1, [Validators.required, Validators.min(1), Validators.max(100)]],
+      quantity: [1, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -284,6 +322,15 @@ export class ProductDetailsPageComponent implements OnInit {
       .subscribe({
         next: (product) => {
           this.product = product;
+          // Set max quantity validator based on available stock
+          this.addToCartForm
+            .get('quantity')
+            ?.setValidators([
+              Validators.required,
+              Validators.min(1),
+              Validators.max(product.stock),
+            ]);
+          this.addToCartForm.get('quantity')?.updateValueAndValidity();
           this.isInWishlist$ = this.store.select(selectIsInWishlist(product.id));
         },
         error: (error) => {
@@ -294,10 +341,23 @@ export class ProductDetailsPageComponent implements OnInit {
 
   addToCart() {
     if (this.product && this.addToCartForm.valid) {
+      // Check if product is in stock
+      if (!isInStock(this.product.stock)) {
+        this.snackBar.open(`✗ "${this.product.name}" est en rupture de stock`, 'Fermer', {
+          duration: 3500,
+          horizontalPosition: 'end',
+          verticalPosition: 'bottom',
+          panelClass: ['snackbar-error'],
+          politeness: 'assertive',
+        });
+        return;
+      }
+
       const quantity = this.addToCartForm.get('quantity')?.value || 1;
+
       this.store.dispatch(CartActions.addToCart({ product: this.product, quantity }));
 
-      this.snackBar.open(`✓ Added ${quantity}x "${this.product.name}" to cart`, 'Close', {
+      this.snackBar.open(`✓ ${quantity}x "${this.product.name}" ajouté au panier`, 'Fermer', {
         duration: 3500,
         horizontalPosition: 'end',
         verticalPosition: 'bottom',
@@ -306,6 +366,15 @@ export class ProductDetailsPageComponent implements OnInit {
       });
 
       this.addToCartForm.reset({ quantity: 1 });
+    } else if (this.addToCartForm.get('quantity')?.hasError('max')) {
+      const maxStock = this.product?.stock || 0;
+      this.snackBar.open(`✗ Stock insuffisant. Maximum disponible: ${maxStock}`, 'Fermer', {
+        duration: 3500,
+        horizontalPosition: 'end',
+        verticalPosition: 'bottom',
+        panelClass: ['snackbar-error'],
+        politeness: 'assertive',
+      });
     }
   }
 
@@ -323,6 +392,8 @@ export class ProductDetailsPageComponent implements OnInit {
               name: this.product!.name,
               price: this.product!.price,
               image: this.product!.image || '',
+              stock: this.product!.stock,
+              lowStockThreshold: this.product!.lowStockThreshold,
             },
           }),
         );

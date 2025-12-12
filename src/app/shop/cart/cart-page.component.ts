@@ -13,6 +13,7 @@ import {
   selectCartTotal,
   selectCartCount,
   selectCartEmpty,
+  selectStockValidationErrors,
 } from '../../state/cart/cart.selectors';
 import { CartItem } from '../../state/cart/cart.models';
 import { CartItemComponent } from './cart-item.component';
@@ -75,6 +76,37 @@ import { CartSummaryComponent } from './cart-summary.component';
 
         <div *ngIf="!(isEmpty$ | async)" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div class="lg:col-span-2">
+            <!-- Stock Validation Errors Alert -->
+            <div
+              *ngIf="stockValidationErrors$ | async as errors"
+              [ngClass]="
+                errors.length > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
+              "
+              class="mb-4 rounded-lg border p-4"
+            >
+              <div class="flex items-start gap-3">
+                <mat-icon [ngClass]="errors.length > 0 ? 'text-red-600' : 'text-green-600'">
+                  {{ errors.length > 0 ? 'error' : 'check_circle' }}
+                </mat-icon>
+                <div class="flex-1">
+                  <h4
+                    [ngClass]="errors.length > 0 ? 'text-red-900' : 'text-green-900'"
+                    class="font-semibold"
+                  >
+                    {{ errors.length > 0 ? 'Problèmes de stock détectés' : 'Stock validé' }}
+                  </h4>
+                  <ul *ngIf="errors.length > 0" class="mt-2 space-y-1">
+                    <li *ngFor="let error of errors" [ngClass]="'text-red-700'" class="text-sm">
+                      ✗ {{ error }}
+                    </li>
+                  </ul>
+                  <p *ngIf="errors.length === 0" class="mt-1 text-sm text-green-700">
+                    ✓ Tous les articles en stock sont disponibles
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div class="rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm">
               <h3 class="mb-6 text-lg font-medium text-slate-500">
                 Items <span class="text-sky-600">({{ cartCount$ | async }})</span>
@@ -133,12 +165,14 @@ export class CartPageComponent implements OnInit {
   cartTotal$: Observable<number>;
   cartCount$: Observable<number>;
   isEmpty$: Observable<boolean>;
+  stockValidationErrors$: Observable<string[]>;
 
   constructor(private store: Store) {
     this.cartItems$ = this.store.select(selectCartItems);
     this.cartTotal$ = this.store.select(selectCartTotal);
     this.cartCount$ = this.store.select(selectCartCount);
     this.isEmpty$ = this.store.select(selectCartEmpty);
+    this.stockValidationErrors$ = this.store.select(selectStockValidationErrors);
   }
 
   ngOnInit() {

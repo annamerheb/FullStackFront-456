@@ -7,6 +7,7 @@ export interface Product {
   image: string;
   ratings: { user_id: number; value: number }[];
   stock: number;
+  lowStockThreshold: number;
   discount?: number;
 }
 
@@ -46,7 +47,8 @@ export const products: Product[] = [
     owner_id: 10,
     image: imageUrls[0],
     ratings: [{ user_id: 2, value: 4 }],
-    stock: 45,
+    stock: 0,
+    lowStockThreshold: 1,
     discount: 10,
   },
   {
@@ -57,7 +59,8 @@ export const products: Product[] = [
     owner_id: 11,
     image: imageUrls[1],
     ratings: [{ user_id: 3, value: 5 }],
-    stock: 32,
+    stock: 3,
+    lowStockThreshold: 8,
     discount: 5,
   },
   {
@@ -69,6 +72,7 @@ export const products: Product[] = [
     image: imageUrls[2],
     ratings: [{ user_id: 4, value: 3 }],
     stock: 18,
+    lowStockThreshold: 4,
   },
   {
     id: 4,
@@ -78,7 +82,8 @@ export const products: Product[] = [
     owner_id: 13,
     image: imageUrls[3],
     ratings: [{ user_id: 2, value: 5 }],
-    stock: 120,
+    stock: 0,
+    lowStockThreshold: 2,
     discount: 15,
   },
   {
@@ -89,7 +94,8 @@ export const products: Product[] = [
     owner_id: 14,
     image: imageUrls[4],
     ratings: [{ user_id: 1, value: 4 }],
-    stock: 67,
+    stock: 2,
+    lowStockThreshold: 15,
   },
   {
     id: 6,
@@ -100,6 +106,7 @@ export const products: Product[] = [
     image: imageUrls[5],
     ratings: [{ user_id: 3, value: 4 }],
     stock: 200,
+    lowStockThreshold: 40,
     discount: 20,
   },
   {
@@ -111,6 +118,7 @@ export const products: Product[] = [
     image: imageUrls[6],
     ratings: [{ user_id: 6, value: 5 }],
     stock: 89,
+    lowStockThreshold: 18,
   },
   {
     id: 8,
@@ -121,6 +129,7 @@ export const products: Product[] = [
     image: imageUrls[7],
     ratings: [{ user_id: 3, value: 3 }],
     stock: 500,
+    lowStockThreshold: 100,
     discount: 25,
   },
   {
@@ -132,6 +141,7 @@ export const products: Product[] = [
     image: imageUrls[8],
     ratings: [{ user_id: 5, value: 4 }],
     stock: 76,
+    lowStockThreshold: 15,
   },
   {
     id: 10,
@@ -142,6 +152,7 @@ export const products: Product[] = [
     image: imageUrls[9],
     ratings: [{ user_id: 7, value: 5 }],
     stock: 54,
+    lowStockThreshold: 12,
     discount: 8,
   },
   {
@@ -153,6 +164,7 @@ export const products: Product[] = [
     image: imageUrls[10],
     ratings: [{ user_id: 2, value: 4 }],
     stock: 150,
+    lowStockThreshold: 30,
     discount: 12,
   },
   {
@@ -164,6 +176,7 @@ export const products: Product[] = [
     image: imageUrls[11],
     ratings: [{ user_id: 8, value: 5 }],
     stock: 28,
+    lowStockThreshold: 6,
   },
   {
     id: 13,
@@ -174,6 +187,7 @@ export const products: Product[] = [
     image: imageUrls[12],
     ratings: [{ user_id: 9, value: 3 }],
     stock: 95,
+    lowStockThreshold: 19,
     discount: 10,
   },
   {
@@ -185,6 +199,7 @@ export const products: Product[] = [
     image: imageUrls[13],
     ratings: [{ user_id: 1, value: 4 }],
     stock: 42,
+    lowStockThreshold: 10,
   },
   {
     id: 15,
@@ -195,6 +210,7 @@ export const products: Product[] = [
     image: imageUrls[14],
     ratings: [{ user_id: 3, value: 5 }],
     stock: 38,
+    lowStockThreshold: 8,
     discount: 7,
   },
   {
@@ -206,6 +222,7 @@ export const products: Product[] = [
     image: imageUrls[15],
     ratings: [{ user_id: 6, value: 4 }],
     stock: 25,
+    lowStockThreshold: 5,
     discount: 15,
   },
   {
@@ -217,6 +234,7 @@ export const products: Product[] = [
     image: imageUrls[16],
     ratings: [{ user_id: 5, value: 3 }],
     stock: 56,
+    lowStockThreshold: 12,
   },
   {
     id: 18,
@@ -227,6 +245,7 @@ export const products: Product[] = [
     image: imageUrls[17],
     ratings: [{ user_id: 8, value: 5 }],
     stock: 14,
+    lowStockThreshold: 3,
     discount: 18,
   },
   {
@@ -237,7 +256,8 @@ export const products: Product[] = [
     owner_id: 16,
     image: imageUrls[18],
     ratings: [{ user_id: 2, value: 4 }],
-    stock: 71,
+    stock: 1,
+    lowStockThreshold: 3,
   },
   {
     id: 20,
@@ -247,7 +267,8 @@ export const products: Product[] = [
     owner_id: 17,
     image: imageUrls[19],
     ratings: [{ user_id: 9, value: 4 }],
-    stock: 22,
+    stock: 0,
+    lowStockThreshold: 2,
     discount: 12,
   },
 ];

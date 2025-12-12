@@ -5,6 +5,8 @@ export interface WishlistItem {
   name: string;
   price: number;
   image: string;
+  stock?: number;
+  lowStockThreshold?: number;
 }
 
 export const addToWishlist = createAction(

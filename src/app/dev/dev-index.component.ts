@@ -75,8 +75,17 @@ import { MatIconModule } from '@angular/material/icon';
                 mat-stroked-button
                 class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
               >
-                <span class="font-medium">Cart Validate:</span>&nbsp;POST /api/cart/validate/ (price
-                summary)
+                <span class="font-medium">Promo Codes:</span>&nbsp;POST /api/cart/apply-promo/
+                (WELCOME10, FREESHIP, VIP20)
+              </button>
+              <button
+                type="button"
+                routerLink="/dev/stock-validate"
+                mat-stroked-button
+                class="!justify-start !text-left !border-sky-500 !text-slate-700 hover:!bg-sky-50"
+              >
+                <span class="font-medium">Stock Validation:</span>&nbsp;POST
+                /api/cart/validate-stock/
               </button>
               <button
                 type="button"

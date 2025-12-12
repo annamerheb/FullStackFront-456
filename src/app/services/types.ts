@@ -15,6 +15,7 @@ export interface Product {
   avgRating: number;
   image: string;
   stock: number;
+  lowStockThreshold: number;
   discount?: number;
 }
 

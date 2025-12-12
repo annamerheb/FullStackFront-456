@@ -14,6 +14,7 @@ import * as DeliveryActions from '../../state/delivery/delivery.actions';
 import {
   selectAppliedCoupon,
   selectDiscountAmount,
+  selectDiscountsError,
 } from '../../state/discounts/discounts.selectors';
 import {
   selectAvailableDeliveryOptions,
@@ -41,24 +42,54 @@ import { combineLatest, map } from 'rxjs';
     <mat-card class="summary-card summary-card-enter">
       <h3 class="summary-title">Order Summary</h3>
 
-      <div class="coupon-section">
-        <mat-form-field appearance="fill" class="coupon-input">
-          <mat-label>Coupon Code</mat-label>
-          <input matInput [(ngModel)]="couponCode" placeholder="Enter code" />
-          <button mat-icon-button matSuffix (click)="applyCoupon()" [disabled]="!couponCode">
-            <mat-icon>check_circle</mat-icon>
+      <div class="coupon-section" *ngIf="!hidePromoAndDelivery">
+        <div class="coupon-input-group">
+          <mat-form-field appearance="fill" class="coupon-input">
+            <mat-label>Promo Code</mat-label>
+            <input
+              matInput
+              [(ngModel)]="couponCode"
+              name="couponCode"
+              placeholder="WELCOME10, FREESHIP, VIP20"
+              (keyup.enter)="applyCoupon()"
+            />
+          </mat-form-field>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="applyCoupon()"
+            [disabled]="!couponCode"
+            class="apply-button"
+          >
+            Apply
           </button>
-        </mat-form-field>
-        <div class="coupon-hint text-xs text-slate-500 mt-1">
-          Try: <strong>SAVE10</strong>, <strong>SAVE15</strong>, <strong>SAVE20</strong>,
-          <strong>WELCOME</strong>
         </div>
-        <div *ngIf="appliedCoupon$ | async as coupon" class="coupon-applied text-green-600 mt-2">
-          ✓ Coupon "{{ coupon.code }}" applied
+        <div class="coupon-hint text-xs text-slate-500 mt-2">
+          Try: <strong>WELCOME10</strong> (10% off), <strong>FREESHIP</strong> (free shipping),
+          <strong>VIP20</strong> (20% off, min €50)
+        </div>
+        <div
+          *ngIf="appliedCoupon$ | async as coupon"
+          class="coupon-applied text-green-600 mt-2 flex items-center justify-between gap-2"
+        >
+          <span>✓ Promo "{{ coupon.code }}" applied</span>
+          <button
+            mat-stroked-button
+            (click)="removeCoupon()"
+            class="remove-coupon-btn"
+            title="Remove coupon"
+            type="button"
+          >
+            <mat-icon>clear</mat-icon>
+            <span>Remove</span>
+          </button>
+        </div>
+        <div *ngIf="discountError$ | async as error" class="coupon-error text-red-600 mt-2 text-sm">
+          ✗ {{ error }}
         </div>
       </div>
 
-      <mat-form-field appearance="fill" class="delivery-select">
+      <mat-form-field appearance="fill" class="delivery-select" *ngIf="!hidePromoAndDelivery">
         <mat-label>Delivery Option</mat-label>
         <mat-select (selectionChange)="selectDelivery($event.value)">
           <mat-option *ngFor="let option of availableOptions$ | async" [value]="option">
@@ -69,22 +100,22 @@ import { combineLatest, map } from 'rxjs';
       </mat-form-field>
 
       <div class="summary-row">
-        <span>Items ({{ cart.itemCount }})</span>
+        <span>Subtotal</span>
         <span>{{ formatPrice(cart.totalPrice) }}</span>
       </div>
 
       <div *ngIf="discountAmount$ | async as discount" class="summary-row discount">
-        <span>Coupon Discount</span>
+        <span>Discount</span>
         <span>-{{ formatPrice(discount) }}</span>
       </div>
 
       <div *ngIf="deliveryCost$ | async as cost" class="summary-row">
-        <span>Delivery</span>
+        <span>Shipping</span>
         <span>{{ formatPrice(cost) }}</span>
       </div>
 
       <div *ngIf="summary$ | async as summary" class="summary-row">
-        <span>Tax</span>
+        <span>Tax (8%)</span>
         <span>{{ formatPrice(summary.taxAmount) }}</span>
       </div>
 
@@ -117,15 +148,45 @@ import { combineLatest, map } from 'rxjs';
         margin-bottom: 16px;
       }
 
+      .coupon-input-group {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+
       .coupon-input {
-        width: 100%;
-        margin-bottom: 8px;
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      .apply-button {
+        margin-top: 8px !important;
+        height: 46px !important;
       }
 
       .coupon-applied {
         font-size: 12px;
         font-weight: 500;
         padding: 4px 0;
+      }
+
+      .coupon-error {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 4px 0;
+      }
+
+      .remove-coupon-btn {
+        color: #dc2626;
+        border-color: #dc2626;
+        font-size: 12px;
+        height: auto;
+        padding: 4px 12px;
+      }
+
+      .remove-coupon-btn:hover {
+        background-color: rgba(220, 38, 38, 0.1);
+        border-color: #b91c1c;
       }
 
       .delivery-select {
@@ -171,10 +232,12 @@ import { combineLatest, map } from 'rxjs';
 })
 export class CartSummaryComponent implements OnInit {
   @Input() cart!: any;
+  @Input() hidePromoAndDelivery = false;
 
   couponCode = '';
   appliedCoupon$;
   discountAmount$;
+  discountError$;
   availableOptions$;
   selectedDelivery$;
   deliveryCost$;
@@ -184,6 +247,7 @@ export class CartSummaryComponent implements OnInit {
   constructor(private store: Store) {
     this.appliedCoupon$ = this.store.select(selectAppliedCoupon);
     this.discountAmount$ = this.store.select(selectDiscountAmount);
+    this.discountError$ = this.store.select(selectDiscountsError);
     this.availableOptions$ = this.store.select(selectAvailableDeliveryOptions);
     this.selectedDelivery$ = this.store.select(selectSelectedDeliveryOption);
     this.deliveryCost$ = this.store.select(selectDeliveryOptionCost);
@@ -198,8 +262,9 @@ export class CartSummaryComponent implements OnInit {
         const deliveryAmount = deliveryCost || 0;
 
         const subtotalAfterDiscount = Math.max(0, cartTotal - discountAmount);
-        const taxAmount = subtotalAfterDiscount * 0.2;
-        const totalAmount = subtotalAfterDiscount + taxAmount + deliveryAmount;
+        // Tax is 8% on the subtotal after discount + shipping
+        const taxAmount = (subtotalAfterDiscount + deliveryAmount) * 0.08;
+        const totalAmount = subtotalAfterDiscount + deliveryAmount + taxAmount;
 
         return {
           cartTotal,
@@ -256,6 +321,10 @@ export class CartSummaryComponent implements OnInit {
 
   selectDelivery(option: DeliveryOption) {
     this.store.dispatch(DeliveryActions.selectDeliveryOption({ option }));
+  }
+
+  removeCoupon() {
+    this.store.dispatch(DiscountsActions.removeCoupon());
   }
 
   formatPrice(price: number): string {

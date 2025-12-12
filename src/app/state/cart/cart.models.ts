@@ -9,12 +9,16 @@ export interface CartState {
   items: CartItem[];
   totalPrice: number;
   itemCount: number;
+  stockValidationErrors: string[];
+  isValidatingStock: boolean;
 }
 
 export const initialCartState: CartState = {
   items: [],
   totalPrice: 0,
   itemCount: 0,
+  stockValidationErrors: [],
+  isValidatingStock: false,
 };
 
 export function calculateTotalPrice(items: CartItem[]): number {

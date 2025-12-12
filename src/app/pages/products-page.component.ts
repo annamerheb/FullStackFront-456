@@ -22,6 +22,7 @@ import * as WishlistActions from '../state/wishlist/wishlist.actions';
 import { selectIsInWishlist, selectWishlistItems } from '../state/wishlist/wishlist.selectors';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { getStockStatus, StockStatus } from '../services/stock.utils';
 
 export interface Product {
   id: number;
@@ -31,6 +32,7 @@ export interface Product {
   image: string;
   avgRating: number;
   stock: number;
+  lowStockThreshold: number;
   discount?: number;
 }
 
@@ -149,13 +151,18 @@ export interface Product {
                 <div
                   class="rounded-lg px-3 py-1 text-xs font-semibold shadow-lg whitespace-nowrap"
                   [ngClass]="{
-                    'bg-green-600 text-white': product.stock > 20,
-                    'bg-yellow-600 text-white': product.stock > 5 && product.stock <= 20,
-                    'bg-red-600 text-white': product.stock <= 5,
-                    'bg-slate-200 text-slate-700': product.stock == null || product.stock === 0,
+                    'bg-green-600 text-white':
+                      getStockStatus(product.stock, product.lowStockThreshold).status ===
+                      StockStatus.IN_STOCK,
+                    'bg-yellow-600 text-white':
+                      getStockStatus(product.stock, product.lowStockThreshold).status ===
+                      StockStatus.LOW_STOCK,
+                    'bg-slate-500 text-white':
+                      getStockStatus(product.stock, product.lowStockThreshold).status ===
+                      StockStatus.OUT_OF_STOCK,
                   }"
                 >
-                  {{ product.stock }} in stock
+                  {{ getStockStatus(product.stock, product.lowStockThreshold).label }}
                 </div>
               </div>
 
@@ -305,6 +312,10 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   wishlistItems: any[] = [];
 
+  // Stock utilities
+  getStockStatus = getStockStatus;
+  StockStatus = StockStatus;
+
   constructor(
     private fb: FormBuilder,
     private store: Store,
@@ -336,7 +347,7 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
 
     this.filterForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.currentPage = 0;
-      this.pageSize = Number(this.filterForm.get('pageSize')?.value) || 6;
+      this.pageSize = Number(this.filterForm.get('pageSize')?.value) || 8;
       this.loadProducts();
     });
   }
@@ -352,9 +363,14 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   }
 
   onPageChange(event: any): void {
+    console.log('Page change event:', event);
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.filterForm.patchValue({ pageSize: event.pageSize });
+    console.log('Updated currentPage and pageSize:', {
+      currentPage: this.currentPage,
+      pageSize: this.pageSize,
+    });
+    this.filterForm.patchValue({ pageSize: this.pageSize }, { emitEvent: false });
     this.loadProducts();
   }
 
@@ -375,6 +391,8 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
             name: product.name,
             price: product.price,
             image: product.image,
+            stock: product.stock,
+            lowStockThreshold: product.lowStockThreshold,
           },
         }),
       );
@@ -389,7 +407,7 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   }
 
   private loadProducts(): void {
-    const pageSize = Number(this.filterForm.get('pageSize')?.value) || 6;
+    const pageSize = this.pageSize;
     const minRating = Number(this.filterForm.get('minRating')?.value) || 0;
 
     const filters = {
@@ -399,6 +417,7 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
       ordering: this.filterForm.get('ordering')?.value || '',
     };
 
+    console.log('loadProducts() called with filters:', filters);
     this.store.dispatch(ProductsActions.loadProducts({ filters }));
   }
 }

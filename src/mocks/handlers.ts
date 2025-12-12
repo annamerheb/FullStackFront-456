@@ -215,10 +215,9 @@ export const handlers = [
       };
     });
 
-    const couponDiscount = body.coupon_discount || 0;
-    const deliveryCharge = body.delivery_charge || 0;
-    const tax = subtotal * 0.08;
-    const total = subtotal - couponDiscount + deliveryCharge + tax;
+    const deliveryCharge = body.delivery_charge || 10;
+    const tax = Math.round(subtotal * 0.08 * 100) / 100;
+    const total = subtotal + deliveryCharge + tax;
 
     return HttpResponse.json(
       {
@@ -226,7 +225,6 @@ export const handlers = [
         valid: true,
         summary: {
           subtotal,
-          coupon_discount: couponDiscount,
           delivery_charge: deliveryCharge,
           tax,
           total,
@@ -499,5 +497,126 @@ export const handlers = [
     dynamicReviews[productId].push(newReview);
 
     return HttpResponse.json(newReview, { status: 201 });
+  }),
+
+  http.post(`${API}/cart/apply-promo/`, async ({ request }) => {
+    const body = (await request.json()) as any;
+    const promoCode = body.promo_code ? (body.promo_code as string).toUpperCase() : '';
+    const items = body.items || [];
+
+    // Calculate itemsTotal
+    let itemsTotal = 0;
+    items.forEach((item: any) => {
+      itemsTotal += (item.product?.price || item.price) * item.quantity;
+    });
+
+    let discount = 0;
+    let shipping = body.shipping || 10; // Default shipping cost
+    let appliedPromos: string[] = [];
+    let error: string | null = null;
+
+    // Promo codes logic - NEW CODES ONLY
+    if (promoCode === 'WELCOME10') {
+      // -10% on items total
+      discount = Math.round(itemsTotal * 0.1 * 100) / 100;
+      appliedPromos.push('WELCOME10');
+    } else if (promoCode === 'FREESHIP') {
+      // Free shipping
+      shipping = 0;
+      appliedPromos.push('FREESHIP');
+    } else if (promoCode === 'VIP20') {
+      // -20% but only if itemsTotal >= 50
+      if (itemsTotal >= 50) {
+        discount = Math.round(itemsTotal * 0.2 * 100) / 100;
+        appliedPromos.push('VIP20');
+      } else {
+        error = 'Code VIP20 requires a minimum purchase of 50€';
+        return HttpResponse.json(
+          {
+            error,
+            itemsTotal,
+            discount: 0,
+            shipping: shipping,
+            taxes: 0,
+            grandTotal: itemsTotal + shipping,
+            appliedPromos: [],
+          },
+          { status: 400 },
+        );
+      }
+    } else if (promoCode) {
+      // Invalid promo code
+      error = `Promo code "${promoCode}" is not valid`;
+      return HttpResponse.json(
+        {
+          error,
+          itemsTotal,
+          discount: 0,
+          shipping: shipping,
+          taxes: 0,
+          grandTotal: itemsTotal + shipping,
+          appliedPromos: [],
+        },
+        { status: 400 },
+      );
+    }
+
+    // Calculate taxes on discounted amount
+    const taxableAmount = itemsTotal - discount;
+    const taxes = Math.round(taxableAmount * 0.08 * 100) / 100;
+    const grandTotal = Math.round((itemsTotal - discount + shipping + taxes) * 100) / 100;
+
+    return HttpResponse.json(
+      {
+        itemsTotal,
+        discount,
+        shipping,
+        taxes,
+        grandTotal,
+        appliedPromos,
+      },
+      { status: 200 },
+    );
+  }),
+
+  // Validate stock before order placement
+  http.post(`${API}/cart/validate-stock/`, async ({ request }) => {
+    const body = (await request.json()) as any;
+    const items = body.items || [];
+
+    // Check stock for each item
+    const errors: string[] = [];
+
+    for (const item of items) {
+      const product = products.find((p) => p.id === item.product);
+      if (!product) {
+        errors.push(`Product ${item.product} not found`);
+        continue;
+      }
+
+      if (product.stock < item.quantity) {
+        errors.push(
+          `Stock insuffisant pour le produit "${product.name}". Disponible: ${product.stock}, Demandé: ${item.quantity}`,
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      return HttpResponse.json(
+        {
+          valid: false,
+          errors,
+        },
+        { status: 400 },
+      );
+    }
+
+    return HttpResponse.json(
+      {
+        valid: true,
+        errors: [],
+      },
+      { status: 200 },
+    );
   }),
 ];

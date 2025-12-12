@@ -91,6 +91,7 @@ import { CartSummaryComponent } from '../cart/cart-summary.component';
                   itemCount: (cartCount$ | async) || 0,
                   totalPrice: (cartTotal$ | async) || 0,
                 }"
+                [hidePromoAndDelivery]="true"
               ></app-cart-summary>
 
               <button

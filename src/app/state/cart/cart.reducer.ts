@@ -71,6 +71,24 @@ const cartReducerImpl = createReducer(
     totalPrice: calculateTotalPrice(items || []),
     itemCount: calculateItemCount(items || []),
   })),
+
+  on(CartActions.validateStockRequest, (state) => ({
+    ...state,
+    isValidatingStock: true,
+    stockValidationErrors: [],
+  })),
+
+  on(CartActions.validateStockSuccess, (state) => ({
+    ...state,
+    isValidatingStock: false,
+    stockValidationErrors: [],
+  })),
+
+  on(CartActions.validateStockFailure, (state, { errors }) => ({
+    ...state,
+    isValidatingStock: false,
+    stockValidationErrors: errors,
+  })),
 );
 
 export function cartFeatureReducer(state: CartState | undefined, action: Action): CartState {

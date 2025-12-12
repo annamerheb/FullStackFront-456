@@ -13,10 +13,12 @@ export class ProductsEffects {
     this.actions$.pipe(
       ofType(ProductsActions.loadProducts),
       map(({ filters }) => {
-        const page = filters?.page || 1;
-        const pageSize = filters?.pageSize || 10;
+        const page = (filters?.page || 0) + 1; // Convert from 0-based to 1-based
+        const pageSize = filters?.pageSize || 8;
         const minRating = filters?.minRating || 0;
         const ordering = filters?.ordering || '-created_at';
+
+        console.log('Loading products with filters:', { page, pageSize, minRating, ordering });
 
         let rows = products
           .map((p: any) => ({
@@ -27,6 +29,7 @@ export class ProductsEffects {
             image: p.image,
             avgRating: avgRating(p.ratings),
             stock: p.stock,
+            lowStockThreshold: p.lowStockThreshold,
             discount: p.discount,
           }))
           .filter((p: any) => p.avgRating >= minRating);
@@ -37,6 +40,15 @@ export class ProductsEffects {
         rows.sort((a: any, b: any) => (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * sign);
 
         const { count, results } = paginate(rows, page, pageSize);
+
+        console.log('Paginated results:', {
+          count,
+          page,
+          pageSize,
+          resultsLength: results.length,
+          firstId: results[0]?.id,
+          lastId: results[results.length - 1]?.id,
+        });
 
         return ProductsActions.loadProductsSuccess({
           data: { count, next: null, previous: null, results } as any,

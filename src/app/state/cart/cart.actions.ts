@@ -25,3 +25,12 @@ export const loadCartFromStorage = createAction(
 );
 
 export const saveCartToStorage = createAction('[Cart] Save To Storage');
+
+export const validateStockRequest = createAction('[Cart] Validate Stock Request');
+
+export const validateStockSuccess = createAction('[Cart] Validate Stock Success');
+
+export const validateStockFailure = createAction(
+  '[Cart] Validate Stock Failure',
+  props<{ errors: string[] }>(),
+);

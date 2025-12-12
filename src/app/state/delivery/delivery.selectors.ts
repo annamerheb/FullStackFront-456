@@ -14,8 +14,14 @@ export const selectSelectedDeliveryOption = createSelector(
 );
 
 export const selectDeliveryOptionCost = createSelector(
+  selectDeliveryState,
   selectSelectedDeliveryOption,
-  (option) => option?.cost || 0,
+  (state, option) => {
+    if (state.isFreeShippingActive) {
+      return 0;
+    }
+    return option?.cost || 0;
+  },
 );
 
 export const selectDeliveryEstimatedDays = createSelector(

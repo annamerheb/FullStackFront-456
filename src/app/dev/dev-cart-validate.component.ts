@@ -31,9 +31,10 @@ import { JsonPipe } from '@angular/common';
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
                 Development
               </p>
-              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Cart Validation</h1>
+              <h1 class="mt-2 text-3xl font-semibold text-slate-900">Apply Promo Code</h1>
               <p class="mt-1 text-sm text-slate-600">
-                POST /api/cart/validate/ - Returns price summary
+                POST /api/cart/apply-promo/ - Apply promo codes and calculate totals (WELCOME10,
+                FREESHIP, VIP20)
               </p>
             </div>
 
@@ -100,8 +101,8 @@ export class DevCartValidateComponent implements OnInit {
       "quantity": 2
     }
   ],
-  "coupon_discount": 0.5,
-  "delivery_charge": 5.99
+  "promo_code": "WELCOME10",
+  "shipping": 10
 }`;
 
   response = signal<any>(null);
@@ -117,7 +118,7 @@ export class DevCartValidateComponent implements OnInit {
 
     try {
       const payload = JSON.parse(this.requestPayload);
-      this.http.post('/api/cart/validate/', payload).subscribe({
+      this.http.post('/api/cart/apply-promo/', payload).subscribe({
         next: (res) => {
           this.response.set(res);
         },

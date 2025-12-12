@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CartItem } from '../../state/cart/cart.models';
 
 @Component({
@@ -19,6 +20,7 @@ import { CartItem } from '../../state/cart/cart.models';
     MatInputModule,
     MatCardModule,
     MatTooltipModule,
+    MatSnackBarModule,
   ],
   template: `
     <mat-card class="cart-item-card cart-item-enter">
@@ -55,10 +57,15 @@ import { CartItem } from '../../state/cart/cart.models';
             [id]="'qty-' + item.product.id"
             type="number"
             min="1"
+            [max]="item.product.stock"
             [(ngModel)]="quantity"
             (change)="onQuantityChange()"
             class="qty-input qty-input-change"
           />
+          <div *ngIf="quantity > item.product.stock" class="text-red-600 text-xs mt-1">
+            ✗ Stock insuffisant pour le produit {{ item.product.name }}. Maximum:
+            {{ item.product.stock }}
+          </div>
         </div>
 
         <div class="item-total">
@@ -252,6 +259,8 @@ export class CartItemComponent {
 
   quantity: number = 0;
 
+  constructor(private snackBar: MatSnackBar) {}
+
   ngOnInit() {
     this.quantity = this.item.quantity;
   }
@@ -268,6 +277,24 @@ export class CartItemComponent {
   }
 
   onQuantityChange() {
+    if (this.quantity > this.item.product.stock) {
+      // Show error message when quantity exceeds stock
+      this.snackBar.open(
+        `✗ Stock insuffisant pour le produit ${this.item.product.name}. Maximum: ${this.item.product.stock}`,
+        'Fermer',
+        {
+          duration: 3500,
+          horizontalPosition: 'end',
+          verticalPosition: 'bottom',
+          panelClass: ['snackbar-error'],
+          politeness: 'assertive',
+        },
+      );
+      // Reset quantity to previous valid value
+      this.quantity = this.item.quantity;
+      return;
+    }
+
     if (this.quantity > 0) {
       this.quantityChanged.emit(this.quantity);
     }

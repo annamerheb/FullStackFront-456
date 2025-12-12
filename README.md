@@ -32,7 +32,7 @@ A comprehensive e‑commerce Angular frontend built with Angular 20 + NgRx + Ang
 ### Advanced Features
 
 - **Toast/Snackbar notifications** with blue gradient theme, sans-serif fonts, and slide-in animations when adding items to cart
-- **Coupon code system** with validation (SAVE10, SAVE15, SAVE20, WELCOME codes) and automatic discount application
+- **Coupon code system** with validation (WELCOME10, FREESHIP, VIP20 codes) and automatic discount application
 - **Product stock indicators** color-coded display: green (>20), yellow (5-20), red (≤5)
 - **Delivery options** selector: Standard (€5.99), Express (€12.99), Overnight (€24.99), Pickup (Free)
 - **Cart animations** with CSS keyframes for smooth item entry, quantity changes, and hover effects
@@ -107,7 +107,7 @@ npx ng serve --open
 
 - **`/dev`** — Dev index page with links to all testing endpoints
 - **`/dev/products/:id`** — Test individual product endpoint (shows all 20 products with clickable test buttons)
-- **`/dev/cart-validate`** — Test POST `/api/cart/validate/` endpoint with editable request payload
+- **`/dev/cart-validate`** — Test POST `/api/cart/apply-promo/` endpoint with promo codes (WELCOME10, FREESHIP, VIP20)
 - **`/dev/order`** — Test POST `/api/order/` endpoint with editable request payload and order confirmation response
 
 ---
@@ -184,7 +184,7 @@ src/
 ## Important files (where to look)
 
 - `src/mocks/data.ts` — 20 sample products with ids 1–20, prices, stock levels, and discounts
-- `src/mocks/handlers.ts` — MSW handlers for GET `/api/products/:id/`, POST `/api/cart/validate/`, and POST `/api/order/`
+- `src/mocks/handlers.ts` — MSW handlers for GET `/api/products/:id/`, POST `/api/cart/apply-promo/`, and POST `/api/order/`
 - `src/app/state/` — NgRx feature stores:
   - `auth/*` — Authentication actions, effects, selectors
   - `cart/*` — Shopping cart state with add/remove/update actions, localStorage persistence effects
@@ -255,66 +255,160 @@ this.snackBar.open(`✓ Added ${quantity}x "${this.product.name}" to cart`, 'Clo
 
 ---
 
-### 2. Coupon Code Validation System
+### 2. Promo Code System
 
-**File:** `src/app/state/discounts/discounts.effects.ts` (NEW)
+**File:** `src/app/state/discounts/discounts.effects.ts` + `src/mocks/handlers.ts`
 
-A complete coupon validation system integrated into NgRx effects:
+A complete promo code validation system integrated into NgRx effects with API endpoint:
 
-**Valid Coupon Codes:**
+**Valid Promo Codes:**
 
-| Code    | Discount | Type       |
-| ------- | -------- | ---------- |
-| SAVE10  | 10%      | Percentage |
-| SAVE15  | 15%      | Percentage |
-| SAVE20  | 20%      | Percentage |
-| WELCOME | 5%       | First-time |
+| Code      | Discount      | Type     | Conditions           |
+| --------- | ------------- | -------- | -------------------- |
+| WELCOME10 | 10% off items | Fixed €  | No minimum           |
+| FREESHIP  | Free shipping | Fixed €0 | No minimum           |
+| VIP20     | 20% off items | Fixed €  | Minimum €50 required |
 
 **Features:**
 
 - Case-insensitive validation
-- Error messages for invalid codes
+- Error messages for invalid codes and unmet conditions
+- API-based validation via `/api/cart/apply-promo/` endpoint
 - Automatic discount calculation in cart summary
-- Integration with NgRx cart state
+- Integration with NgRx discounts state
 - Registered in `app.config.ts` via `provideEffects(DiscountsEffects)`
 
-**Error Message for Invalid Code:**
+**Error Messages:**
 
 ```
-Invalid coupon code: "[code]". Try SAVE10, SAVE15, SAVE20, or WELCOME.
+Invalid promo code: "[code]". Try WELCOME10, FREESHIP, or VIP20.
+Code VIP20 requires a minimum purchase of 50€
 ```
 
 **Implementation:**
 
-The `applyCoupon$` effect validates the code against a `VALID_COUPONS` map:
+The `applyCoupon$` effect calls the MSW endpoint `/api/cart/apply-promo/`:
 
 ```typescript
-const VALID_COUPONS: Record<string, number> = {
-  SAVE10: 10,
-  SAVE15: 15,
-  SAVE20: 20,
-  WELCOME: 5,
-};
+POST /api/cart/apply-promo/
+Body: { items, promo_code, shipping }
+Response: { itemsTotal, discount, shipping, taxes, grandTotal, appliedPromos }
 ```
 
 **UI Display:**
 
 - Cart summary component shows:
-  - Applied coupon code
-  - Discount amount (calculated from subtotal)
+  - Applied promo code (green checkmark)
+  - Error message if code invalid or conditions not met (red text)
+  - Discount amount (calculated from endpoint response)
   - Hint text about valid codes
-- Error message displays if invalid code entered
+- Error message displays immediately if invalid code entered
 
 **Cart Calculation Example:**
 
 ```
-Subtotal:     $100.00
-Coupon (SAVE10): -$10.00
-Subtotal after:  $90.00
-Tax (20%):       $18.00
-Delivery:        $5.99
+Items Total:      €100.00
+Promo (WELCOME10): -€10.00
+Subtotal after:    €90.00
+Delivery:          €10.00
+Tax (8%):          €8.00
 ---
-Total:           $113.99
+Total:            €108.00
+```
+
+**FREESHIP Code Behavior:**
+
+When the **FREESHIP** code is applied:
+
+1. API returns `shipping: 0`
+2. `discounts.effects.ts` dispatches `DeliveryActions.setFreeShipping()`
+3. Delivery state's `isFreeShippingActive` flag becomes `true`
+4. `selectDeliveryOptionCost` selector returns `0` instead of the selected delivery option cost
+5. Cart summary displays:
+   ```
+   Items Total:       €100.00
+   Promo (FREESHIP):  €0.00
+   Subtotal:          €100.00
+   Delivery:          €0.00
+   Tax (8%):          €8.00
+   ---
+   Total:             €108.00
+   ```
+
+When the coupon is removed via `removeCoupon$` effect or another code is applied, `DeliveryActions.clearFreeShipping()` is dispatched to restore normal shipping costs.
+
+---
+
+### 4.3 Advanced Stock Management
+
+**Status:** ✅ Implemented
+
+**Requirements Met:**
+
+- Extended product model with `stock` and `lowStockThreshold`
+- Color-coded stock indicators on product cards and details
+- Prevent adding to cart when out of stock
+- Validate stock before checkout via MSW endpoint
+
+**Stock Status Rules:**
+
+| Stock Level                      | Display               | Color  | Icon |
+| -------------------------------- | --------------------- | ------ | ---- |
+| `stock > lowStockThreshold`      | "En stock"            | Green  | ✓    |
+| `0 < stock <= lowStockThreshold` | "Plus que X en stock" | Yellow | ⚠   |
+| `stock === 0`                    | "Rupture de stock"    | Gray   | ✗    |
+
+**Locations:**
+
+- Product listing page (`/shop/products`): Stock badges on cards
+- Product details page (`/shop/products/:id`): Large availability indicator + disabled Add to Cart button
+- Wishlist page: Stock info on items
+
+**Stock Validation Endpoint:**
+
+```
+POST /api/cart/validate-stock/
+Request:
+{
+  "items": [
+    { "product": 1, "quantity": 2 },
+    { "product": 5, "quantity": 1 }
+  ]
+}
+
+Response (Success):
+{ "valid": true, "errors": [] }
+
+Response (Failure):
+{
+  "valid": false,
+  "errors": [
+    "Stock insuffisant pour le produit \"Stylo Bleu\". Disponible: 5, Demandé: 10"
+  ]
+}
+```
+
+**State Management:**
+
+- Cart state now tracks: `stockValidationErrors`, `isValidatingStock`
+- Action: `validateStockRequest()` - triggers validation
+- Effect: Calls `/api/cart/validate-stock/` and handles response
+- Selectors: `selectStockValidationErrors`, `selectIsValidatingStock`, `selectHasStockErrors`
+
+**Dev Testing:**
+
+- Route: `/dev/stock-validate`
+- Test the validation endpoint manually
+- Check errors/success messages
+
+**All 20 Products have realistic stock thresholds:**
+
+```
+Product 1: stock 45 → threshold 10 (low when <= 10)
+Product 2: stock 32 → threshold 8 (low when <= 8)
+Product 3: stock 18 → threshold 4 (low when <= 4)
+...
+Product 20: stock 22 → threshold 5 (low when <= 5)
 ```
 
 ---
@@ -565,7 +659,7 @@ input,
      - Line items with prices
      - Subtotal
      - Discount (if coupon applied)
-     - Tax (calculated as 20% of subtotal - discount)
+     - Tax (calculated as 8% of subtotal after discount + delivery)
      - Delivery cost
      - **Final Total**
    - User clicks "Place Order" to complete purchase (order state is saved)
@@ -685,7 +779,7 @@ The application uses **NgRx** with 6 feature stores:
 - **API endpoints** mocked:
   - `GET /api/products` — Returns all products with filters
   - `GET /api/products/:id` — Returns single product details
-  - `POST /api/cart/validate` — Validates cart items and pricing
+  - `POST /api/cart/apply-promo/` — Validates promo codes and calculates totals
   - `POST /api/order` — Creates new order and returns confirmation
 - **Toggle MSW**: Check `src/environments/environment.ts` to enable/disable MSW
 - **No backend required**: App works completely offline using mock data
@@ -706,11 +800,12 @@ Hub page listing all available dev testing endpoints with navigation links.
 - Click any product ID button to test `GET /api/products/:id/` endpoint
 - Displays full product response (name, price, image, stock, discount, rating)
 
-### `/dev/cart-validate` — Cart Validation Tester
+### `/dev/cart-validate` — Promo Code Tester
 
-- Editable request payload for testing `POST /api/cart/validate/` endpoint
-- Input cart items with product IDs and quantities
-- Displays price summary response with subtotals, discounts, taxes
+- Editable request payload for testing `POST /api/cart/apply-promo/` endpoint
+- Input cart items, promo code, and shipping amount
+- Displays price summary response with discount applied, taxes, and final total
+- Test codes: **WELCOME10** (10% off), **FREESHIP** (free shipping), **VIP20** (20% off, min €50)
 
 ### `/dev/order` — Order Creation Tester
 

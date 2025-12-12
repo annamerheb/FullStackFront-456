@@ -5,6 +5,7 @@ import { DeliveryOption } from './delivery.actions';
 export interface DeliveryState {
   options: DeliveryOption[];
   selectedOption: DeliveryOption | null;
+  isFreeShippingActive: boolean;
 }
 
 const initialDeliveryOptions: DeliveryOption[] = [
@@ -41,6 +42,7 @@ const initialDeliveryOptions: DeliveryOption[] = [
 const initialState: DeliveryState = {
   options: initialDeliveryOptions,
   selectedOption: initialDeliveryOptions[0],
+  isFreeShippingActive: false,
 };
 
 export const deliveryReducer = createReducer(
@@ -55,5 +57,15 @@ export const deliveryReducer = createReducer(
     ...state,
     options,
     selectedOption: state.selectedOption || options[0],
+  })),
+
+  on(DeliveryActions.setFreeShipping, (state) => ({
+    ...state,
+    isFreeShippingActive: true,
+  })),
+
+  on(DeliveryActions.clearFreeShipping, (state) => ({
+    ...state,
+    isFreeShippingActive: false,
   })),
 );

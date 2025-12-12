@@ -11,6 +11,7 @@ import { selectWishlistItems, selectWishlistCount } from '../../state/wishlist/w
 import * as WishlistActions from '../../state/wishlist/wishlist.actions';
 import * as CartActions from '../../state/cart/cart.actions';
 import { WishlistItem } from '../../state/wishlist/wishlist.actions';
+import { getStockStatus, StockStatus } from '../../services/stock.utils';
 
 @Component({
   standalone: true,
@@ -69,6 +70,30 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
                 <div
                   class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
                 ></div>
+                <!-- Stock Status Badge -->
+                <div
+                  class="absolute top-3 right-3 rounded-lg px-3 py-1 text-xs font-semibold shadow-lg whitespace-nowrap"
+                  [ngClass]="{
+                    'bg-green-600 text-white':
+                      item.stock !== undefined &&
+                      getStockStatus(item.stock, item.lowStockThreshold || 0).status ===
+                        StockStatus.IN_STOCK,
+                    'bg-yellow-600 text-white':
+                      item.stock !== undefined &&
+                      getStockStatus(item.stock, item.lowStockThreshold || 0).status ===
+                        StockStatus.LOW_STOCK,
+                    'bg-slate-500 text-white':
+                      item.stock !== undefined &&
+                      getStockStatus(item.stock, item.lowStockThreshold || 0).status ===
+                        StockStatus.OUT_OF_STOCK,
+                  }"
+                >
+                  {{
+                    item.stock !== undefined
+                      ? getStockStatus(item.stock, item.lowStockThreshold || 0).label
+                      : ''
+                  }}
+                </div>
               </div>
 
               <div class="flex flex-col p-4">
@@ -92,10 +117,11 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
                     mat-raised-button
                     color="primary"
                     (click)="addToCart(item)"
+                    [disabled]="item.stock === 0"
                     class="flex-1 !rounded-lg !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white text-xs font-semibold h-9"
                   >
                     <mat-icon class="mr-1">shopping_cart</mat-icon>
-                    Add to Cart
+                    {{ item.stock === 0 ? 'Out of Stock' : 'Add to Cart' }}
                   </button>
                   <button
                     mat-icon-button
@@ -159,6 +185,7 @@ import { WishlistItem } from '../../state/wishlist/wishlist.actions';
 export class WishlistPageComponent implements OnInit {
   wishlistItems$: Observable<WishlistItem[]>;
   wishlistCount$: Observable<number>;
+  StockStatus = StockStatus;
 
   constructor(private store: Store) {
     this.wishlistItems$ = this.store.select(selectWishlistItems);
@@ -167,11 +194,21 @@ export class WishlistPageComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  getStockStatus(stock: number, lowStockThreshold: number) {
+    return getStockStatus(stock, lowStockThreshold);
+  }
+
   removeFromWishlist(productId: number): void {
     this.store.dispatch(WishlistActions.removeFromWishlist({ productId }));
   }
 
   addToCart(item: WishlistItem): void {
+    // Prevent adding out-of-stock items
+    if (item.stock === 0) {
+      alert('Ce produit est en rupture de stock');
+      return;
+    }
+
     this.store.dispatch(
       CartActions.addToCart({
         product: {
@@ -181,7 +218,8 @@ export class WishlistPageComponent implements OnInit {
           created_at: new Date().toISOString(),
           image: item.image,
           avgRating: 0,
-          stock: 100,
+          stock: item.stock || 100,
+          lowStockThreshold: item.lowStockThreshold || 20,
         },
         quantity: 1,
       }),
