@@ -1,13 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-skeleton-loader',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="skeleton-container" [attr.data-type]="type">
-      <div *ngFor="let item of skeletonItems" class="skeleton-item">
+      <div *ngFor="let item of skeletonItems; trackBy: trackByIndex" class="skeleton-item">
         <div *ngIf="type === 'card'" class="skeleton-card">
           <div class="skeleton-image"></div>
           <div class="skeleton-content">
@@ -146,5 +147,13 @@ export class SkeletonLoaderComponent {
   @Input() type: 'card' | 'text' | 'table' = 'card';
   get skeletonItems() {
     return Array(this.count).fill(0);
+  }
+
+  /**
+   * TrackBy function for skeleton items in *ngFor
+   * Improves performance by tracking items by their index
+   */
+  trackByIndex(index: number): number {
+    return index;
   }
 }

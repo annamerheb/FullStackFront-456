@@ -45,3 +45,31 @@ export const loadRatingFailure = createAction(
   '[Products] Load Rating Failure',
   props<{ error: string }>(),
 );
+
+/**
+ * Cache-aware loading actions for "stale-while-revalidate" pattern
+ */
+
+export const loadProductsFromCache = createAction(
+  '[Products] Load Products From Cache',
+  props<{ filters?: ProductsFilters }>(),
+);
+
+export const startRevalidatingCache = createAction(
+  '[Products] Start Revalidating Cache',
+  props<{ filters?: ProductsFilters }>(),
+);
+
+export const revalidateCacheSuccess = createAction(
+  '[Products] Revalidate Cache Success',
+  props<{ data: { count: number; results: Product[] } }>(),
+);
+
+export const setCacheTimestamp = createAction(
+  '[Products] Set Cache Timestamp',
+  props<{ timestamp: number }>(),
+);
+
+export const markCacheAsStale = createAction('[Products] Mark Cache As Stale');
+
+export const markCacheAsFresh = createAction('[Products] Mark Cache As Fresh');

@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/angular';
-import { CartSummaryComponent } from '../app/shop/cart/cart-summary.component';
+import { CartSummaryComponent } from '../app/modules/shop/components/cart/cart-summary.component';
 
 const meta: Meta<CartSummaryComponent> = {
   title: 'Shop/CartSummary',

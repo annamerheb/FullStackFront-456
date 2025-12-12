@@ -16,58 +16,38 @@ import { DevOrderDetailsComponent } from './dev/dev-order-details.component';
 import { DevWishlistComponent } from './dev/dev-wishlist.component';
 import { DevReviewsComponent } from './dev/dev-reviews.component';
 import { AppPlaceholderComponent } from './app-placeholder.component';
-import { LoginPageComponent } from './pages/login-page.component';
-import { ProductsPageComponent } from './pages/products-page.component';
-import { ProductRatingPageComponent } from './pages/product-rating-page.component';
-import { CartPageComponent } from './shop/cart/cart-page.component';
-import { ProductDetailsPageComponent } from './shop/product-details/product-details-page.component';
-import { CheckoutSummaryComponent } from './shop/checkout/step1-summary.component';
-import { CheckoutAddressComponent } from './shop/checkout/step2-address.component';
-import { CheckoutConfirmComponent } from './shop/checkout/step3-confirm.component';
-import { WishlistPageComponent } from './shop/wishlist/wishlist-page.component';
-import { ProfilePageComponent } from './pages/account/profile-page.component';
-import { OrdersPageComponent } from './pages/account/orders-page.component';
-import { OrderDetailsPageComponent } from './pages/account/order-details-page.component';
-import { AccountHomeComponent } from './pages/account/account-home.component';
-import { AdminDashboardComponent } from './pages/admin/dashboard-page.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
-  { path: 'login', component: LoginPageComponent },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./modules/shop/pages/login-page.component').then((m) => m.LoginPageComponent),
+  },
+  { path: 'app', component: AppPlaceholderComponent },
+
+  // Lazy-loaded Shop Module (from modules/shop)
   {
     path: 'shop',
     canActivate: [authGuard],
-    children: [
-      { path: 'products', component: ProductsPageComponent },
-      { path: 'products/:id', component: ProductDetailsPageComponent },
-      { path: 'rating', component: ProductRatingPageComponent },
-      { path: 'cart', component: CartPageComponent },
-      { path: 'wishlist', component: WishlistPageComponent },
-      {
-        path: 'checkout',
-        children: [
-          { path: 'summary', component: CheckoutSummaryComponent },
-          { path: 'address', component: CheckoutAddressComponent },
-          { path: 'confirm', component: CheckoutConfirmComponent },
-        ],
-      },
-    ],
+    loadChildren: () => import('./modules/shop/shop.routes').then((m) => m.SHOP_ROUTES),
   },
+
+  // Lazy-loaded Account Module (from modules/account)
   {
     path: 'account',
     canActivate: [authGuard],
-    children: [
-      { path: '', component: AccountHomeComponent, pathMatch: 'full' },
-      { path: 'profile', component: ProfilePageComponent },
-      { path: 'orders', component: OrdersPageComponent },
-      { path: 'orders/:id', component: OrderDetailsPageComponent },
-    ],
+    loadChildren: () => import('./modules/account/account.routes').then((m) => m.ACCOUNT_ROUTES),
   },
+
+  // Lazy-loaded Admin Module (from modules/admin)
   {
     path: 'admin',
     canActivate: [authGuard],
-    children: [{ path: 'dashboard', component: AdminDashboardComponent }],
+    loadChildren: () => import('./modules/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
   },
+
+  // Dev routes (not lazy-loaded for testing)
   { path: 'dev', component: DevIndexComponent },
   { path: 'dev/auth', component: DevAuthComponent },
   { path: 'dev/products', component: DevProductsComponent },
@@ -82,6 +62,6 @@ export const routes: Routes = [
   { path: 'dev/wishlist', component: DevWishlistComponent },
   { path: 'dev/reviews', component: DevReviewsComponent },
   { path: 'dev/admin-stats', component: DevAdminStatsComponent },
-  { path: 'app', component: AppPlaceholderComponent },
+
   { path: '**', redirectTo: '' },
 ];

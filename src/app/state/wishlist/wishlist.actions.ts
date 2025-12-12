@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { Product } from '../../services/types';
 
 export interface WishlistItem {
   id: number;
@@ -7,6 +8,9 @@ export interface WishlistItem {
   image: string;
   stock?: number;
   lowStockThreshold?: number;
+  created_at?: string;
+  avgRating?: number;
+  discount?: number;
 }
 
 export const addToWishlist = createAction(

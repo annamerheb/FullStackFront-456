@@ -168,19 +168,18 @@ export const handlers = [
     const { count, results } = paginate(rows, page, page_size);
     return HttpResponse.json({ count, next: null, previous: null, results }, { status: 200 });
   }),
-  http.get(`${API}/products/:id/rating/`, async ({ params }) => {
-    const id = Number(params['id']);
+  // Fetch single product - supports both `/api/products/:id/` and `/api/products/:id`
+  // MUST come BEFORE the rating handler since it's more specific
+  http.get(`${API}/products/:productId/`, async ({ params }) => {
+    const id = Number(params['productId']);
     const p = products.find((x) => x.id === id);
-    if (!p) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
-    return HttpResponse.json(
-      { product_id: id, avg_rating: avgRating(p.ratings), count: p.ratings.length },
-      { status: 200 },
-    );
-  }),
-  http.get(`${API}/products/:id/`, async ({ params }) => {
-    const id = Number(params['id']);
-    const p = products.find((x) => x.id === id);
-    if (!p) return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+
+    if (!p) {
+      console.warn(`[MSW] Product not found: ${id}`);
+      return HttpResponse.json({ detail: 'Product not found.' }, { status: 404 });
+    }
+
+    console.log(`[MSW] GET /api/products/${id}/ → Found`, p.name);
     return HttpResponse.json(
       {
         id: p.id,
@@ -191,7 +190,24 @@ export const handlers = [
         avgRating: avgRating(p.ratings),
         stock: p.stock,
         discount: p.discount,
+        lowStockThreshold: p.lowStockThreshold,
       },
+      { status: 200 },
+    );
+  }),
+  // Fetch product rating
+  http.get(`${API}/products/:productId/rating/`, async ({ params }) => {
+    const id = Number(params['productId']);
+    const p = products.find((x) => x.id === id);
+
+    if (!p) {
+      console.warn(`[MSW] Product rating not found: ${id}`);
+      return HttpResponse.json({ detail: 'Not found.' }, { status: 404 });
+    }
+
+    console.log(`[MSW] GET /api/products/${id}/rating/`);
+    return HttpResponse.json(
+      { product_id: id, avg_rating: avgRating(p.ratings), count: p.ratings.length },
       { status: 200 },
     );
   }),

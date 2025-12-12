@@ -30,13 +30,11 @@ export const wishlistReducer = createReducer(
     items: [],
   })),
 
-  on(WishlistActions.loadWishlistFromStorage, (state, { productIds }) => ({
-    ...state,
-    items: productIds.map((id) => ({
-      id,
-      name: '',
-      price: 0,
-      image: '',
-    })),
-  })),
+  on(
+    WishlistActions.loadWishlistFromStorage,
+    (state, { productIds }) =>
+      // Note: This action should load full product data from store, not just IDs
+      // For now, keep existing items if loading from storage
+      state,
+  ),
 );

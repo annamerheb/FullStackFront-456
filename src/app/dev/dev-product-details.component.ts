@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   standalone: true,
   selector: 'app-dev-product-details',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule],
   template: `
     <div
@@ -46,7 +47,7 @@ import { MatIconModule } from '@angular/material/icon';
             >
               <button
                 mat-raised-button
-                *ngFor="let id of productIds"
+                *ngFor="let id of productIds; trackBy: trackByProductId"
                 (click)="loadProduct(id)"
                 class="!bg-gradient-to-r !from-sky-600 !to-blue-600 !text-white text-xs !py-1"
               >
@@ -88,5 +89,13 @@ export class DevProductDetailsComponent implements OnInit {
         this.response = { error: err.message };
       },
     });
+  }
+
+  /**
+   * TrackBy function for product IDs in *ngFor
+   * Improves performance by tracking product IDs directly
+   */
+  trackByProductId(index: number, id: number): number {
+    return id;
   }
 }

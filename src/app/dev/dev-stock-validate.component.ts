@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 @Component({
   standalone: true,
   selector: 'app-dev-stock-validate',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     MatCardModule,
@@ -50,7 +51,9 @@ import { Observable } from 'rxjs';
         >
           <h4 class="font-semibold mb-2">{{ errors.length > 0 ? 'Errors:' : 'Success!' }}</h4>
           <ul *ngIf="errors.length > 0" class="space-y-1 text-red-700">
-            <li *ngFor="let error of errors" class="text-sm">✗ {{ error }}</li>
+            <li *ngFor="let error of errors; trackBy: trackByIndex" class="text-sm">
+              ✗ {{ error }}
+            </li>
           </ul>
           <p *ngIf="errors.length === 0" class="text-green-700 text-sm">
             ✓ All items in cart are in stock!
@@ -81,5 +84,13 @@ export class DevStockValidateComponent {
 
   validateStock() {
     this.store.dispatch(CartActions.validateStockRequest());
+  }
+
+  /**
+   * TrackBy function for error list in *ngFor
+   * Improves performance by tracking errors by their index
+   */
+  trackByIndex(index: number): number {
+    return index;
   }
 }

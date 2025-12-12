@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
-import { ProductDetailsPageComponent } from '../app/shop/product-details/product-details-page.component';
+import { ProductDetailsPageComponent } from '../app/modules/shop/pages/product-details/product-details-page.component';
 import { ShopApiService } from '../app/services/shop-api.service';
 import { ActivatedRoute } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';

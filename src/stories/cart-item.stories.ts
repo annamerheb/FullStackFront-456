@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/angular';
-import { CartItemComponent } from '../app/shop/cart/cart-item.component';
+import { CartItemComponent } from '../app/modules/shop/components/cart/cart-item.component';
 import { CartItem } from '../app/state/cart/cart.models';
 
 const meta: Meta<CartItemComponent> = {

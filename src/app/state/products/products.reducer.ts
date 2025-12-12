@@ -15,6 +15,10 @@ export interface ProductsState {
   } | null;
   ratingLoading: boolean;
   ratingError: string | null;
+  // Cache management - "stale-while-revalidate" pattern
+  cacheTimestamp: number | null;
+  isRevalidating: boolean;
+  isCacheStale: boolean;
 }
 
 const initialState: ProductsState = {
@@ -26,7 +30,13 @@ const initialState: ProductsState = {
   rating: null,
   ratingLoading: false,
   ratingError: null,
+  cacheTimestamp: null,
+  isRevalidating: false,
+  isCacheStale: true,
 };
+
+// Cache validity: 5 minutes (300000 ms)
+const CACHE_DURATION = 5 * 60 * 1000;
 
 export const productsReducer = createReducer(
   initialState,
@@ -67,5 +77,46 @@ export const productsReducer = createReducer(
     ...state,
     ratingLoading: false,
     ratingError: error,
+  })),
+
+  // Cache-aware handlers
+  on(ProductsActions.loadProductsFromCache, (state, { filters }) => ({
+    ...state,
+    loading: state.items.length === 0, // Only show loading if no cached items
+    error: null,
+    lastFilters: filters || null,
+  })),
+
+  on(ProductsActions.startRevalidatingCache, (state) => ({
+    ...state,
+    isRevalidating: true,
+  })),
+
+  on(ProductsActions.revalidateCacheSuccess, (state, { data }) => ({
+    ...state,
+    items: data.results,
+    count: data.count,
+    loading: false,
+    error: null,
+    isRevalidating: false,
+    isCacheStale: false,
+    cacheTimestamp: Date.now(),
+  })),
+
+  on(ProductsActions.setCacheTimestamp, (state, { timestamp }) => ({
+    ...state,
+    cacheTimestamp: timestamp,
+    isCacheStale: false,
+  })),
+
+  on(ProductsActions.markCacheAsStale, (state) => ({
+    ...state,
+    isCacheStale: true,
+    isRevalidating: false,
+  })),
+
+  on(ProductsActions.markCacheAsFresh, (state) => ({
+    ...state,
+    isCacheStale: false,
   })),
 );
