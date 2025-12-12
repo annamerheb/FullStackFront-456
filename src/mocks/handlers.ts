@@ -171,7 +171,15 @@ export const handlers = [
   // Fetch single product - supports both `/api/products/:id/` and `/api/products/:id`
   // MUST come BEFORE the rating handler since it's more specific
   http.get(`${API}/products/:productId/`, async ({ params }) => {
-    const id = Number(params['productId']);
+    console.log(`[MSW] Intercepted GET /api/products/:productId/`, params);
+    const productId = params['productId'];
+    const id = Number(productId);
+
+    if (isNaN(id)) {
+      console.error(`[MSW] Invalid product ID: ${productId}`);
+      return HttpResponse.json({ detail: 'Invalid product ID.' }, { status: 400 });
+    }
+
     const p = products.find((x) => x.id === id);
 
     if (!p) {
@@ -179,7 +187,7 @@ export const handlers = [
       return HttpResponse.json({ detail: 'Product not found.' }, { status: 404 });
     }
 
-    console.log(`[MSW] GET /api/products/${id}/ → Found`, p.name);
+    console.log(`[MSW] ✅ GET /api/products/${id}/ → Found "${p.name}"`);
     return HttpResponse.json(
       {
         id: p.id,

@@ -66,8 +66,11 @@ export class ShopApiService {
 
   getProduct(productId: number): Observable<Product> {
     const url = `${this.baseUrl}/products/${productId}/`;
-    console.log(`[API] GET ${url}`);
-    return this.http.get<Product>(url);
+    console.log(`%c[API] GET ${url}`, 'color: cyan; font-weight: bold', `(productId=${productId})`);
+    return this.http.get<Product>(url).pipe(
+      // Log response for debugging
+      (obs) => obs,
+    );
   }
 
   getProductRating(productId: number): Observable<ProductRatingResponse> {
