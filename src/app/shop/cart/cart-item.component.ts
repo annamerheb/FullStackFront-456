@@ -62,10 +62,6 @@ import { CartItem } from '../../state/cart/cart.models';
             (change)="onQuantityChange()"
             class="qty-input qty-input-change"
           />
-          <div *ngIf="quantity > item.product.stock" class="text-red-600 text-xs mt-1">
-            ✗ Stock insuffisant pour le produit {{ item.product.name }}. Maximum:
-            {{ item.product.stock }}
-          </div>
         </div>
 
         <div class="item-total">
@@ -278,7 +274,7 @@ export class CartItemComponent {
 
   onQuantityChange() {
     if (this.quantity > this.item.product.stock) {
-      // Show error message when quantity exceeds stock
+      // Show snackbar error when quantity exceeds stock
       this.snackBar.open(
         `✗ Stock insuffisant pour le produit ${this.item.product.name}. Maximum: ${this.item.product.stock}`,
         'Fermer',

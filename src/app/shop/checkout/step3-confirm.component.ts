@@ -13,11 +13,22 @@ import * as UserActions from '../../state/user/user.actions';
 import { ShopApiService } from '../../services/shop-api.service';
 import { selectUserLoading } from '../../state/user/user.selectors';
 import { filter, take } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
+import { CartSummaryComponent } from '../cart/cart-summary.component';
+import { selectDiscountAmount } from '../../state/discounts/discounts.selectors';
+import { selectDeliveryOptionCost } from '../../state/delivery/delivery.selectors';
 
 @Component({
   standalone: true,
   selector: 'app-checkout-confirm',
-  imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, MatIconModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    CartSummaryComponent,
+  ],
   template: `
     <div class="min-h-screen containerbg px-4 py-8 checkout-page-enter">
       <div class="mx-auto flex max-w-4xl flex-col gap-6">
@@ -95,43 +106,29 @@ import { filter, take } from 'rxjs/operators';
 
           <div class="lg:col-span-1">
             <div class="sticky top-4">
-              <div class="rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm">
-                <h3 class="text-lg font-semibold text-slate-900 mb-4">Total Amount</h3>
-                <div class="space-y-2 mb-4 pb-4 border-b">
-                  <div class="flex justify-between text-sm">
-                    <span>Subtotal</span>
-                    <span>{{ formatPrice(cartTotal$ | async) }}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Shipping</span>
-                    <span>FREE</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Tax</span>
-                    <span>{{ formatPrice(((cartTotal$ | async) || 0) * 0.08) }}</span>
-                  </div>
-                </div>
-                <div class="flex justify-between font-bold text-lg text-sky-600 mb-6">
-                  <span>Total:</span>
-                  <span>{{ formatPrice(((cartTotal$ | async) || 0) * 1.08) }}</span>
-                </div>
+              <app-cart-summary
+                [cart]="{
+                  itemCount: (cartCount$ | async) || 0,
+                  totalPrice: (cartTotal$ | async) || 0,
+                }"
+                [hidePromoAndDelivery]="true"
+              ></app-cart-summary>
 
-                <button
-                  mat-raised-button
-                  color="primary"
-                  (click)="placeOrder()"
-                  class="w-full h-12 mb-2"
-                >
-                  Place Order
-                </button>
-                <button
-                  mat-stroked-button
-                  routerLink="/shop/checkout/address"
-                  class="w-full !border-sky-500 !text-sky-600 hover:!bg-sky-50"
-                >
-                  Back
-                </button>
-              </div>
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="placeOrder()"
+                class="w-full h-12 mb-2 mt-4"
+              >
+                Place Order
+              </button>
+              <button
+                mat-stroked-button
+                routerLink="/shop/checkout/address"
+                class="w-full !border-sky-500 !text-sky-600 hover:!bg-sky-50"
+              >
+                Back
+              </button>
             </div>
           </div>
         </div>
@@ -143,6 +140,7 @@ import { filter, take } from 'rxjs/operators';
 export class CheckoutConfirmComponent implements OnInit {
   cartItems$: Observable<CartItem[]>;
   cartTotal$: Observable<number>;
+  cartCount$: Observable<number>;
   address: any;
   private isSubmitting = false;
   loading$: Observable<boolean>;
@@ -154,6 +152,7 @@ export class CheckoutConfirmComponent implements OnInit {
   ) {
     this.cartItems$ = this.store.select(selectCartItems);
     this.cartTotal$ = this.store.select(selectCartTotal);
+    this.cartCount$ = this.store.select(selectCartCount);
     this.loading$ = this.store.select(selectUserLoading);
   }
 
@@ -168,45 +167,64 @@ export class CheckoutConfirmComponent implements OnInit {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
 
-    this.cartItems$
-      .subscribe((items) => {
-        this.cartTotal$
-          .subscribe((total) => {
-            const orderPayload = {
-              items: items,
-              total_amount: total,
-              delivery_option: 'standard',
-              shipping_address: this.address || {},
-              payment_method: 'card',
-            };
+    combineLatest([
+      this.cartItems$,
+      this.cartTotal$,
+      this.store.select(selectDiscountAmount),
+      this.store.select(selectDeliveryOptionCost),
+    ])
+      .pipe(take(1))
+      .subscribe({
+        next: ([items, cartTotal, discount, deliveryCost]) => {
+          // Calculate total with shipping and tax
+          const discountAmount = discount || 0;
+          const deliveryAmount = deliveryCost || 0;
+          const subtotalAfterDiscount = Math.max(0, cartTotal - discountAmount);
+          const taxAmount = (subtotalAfterDiscount + deliveryAmount) * 0.08;
+          const totalAmount = subtotalAfterDiscount + deliveryAmount + taxAmount;
 
-            this.shopApi.createOrder(orderPayload).subscribe({
-              next: (response: any) => {
-                alert('Order placed successfully! Order #' + response.order_number);
-                this.store.dispatch(CartActions.clearCart());
-                this.store.dispatch(UserActions.loadOrders({ page: 1, pageSize: 3 }));
-                localStorage.removeItem('cart');
-                sessionStorage.removeItem('checkout_address');
+          const orderPayload = {
+            items: items,
+            total_amount: totalAmount,
+            subtotal_amount: subtotalAfterDiscount,
+            shipping_cost: deliveryAmount,
+            tax_amount: taxAmount,
+            delivery_option: 'standard',
+            shipping_address: this.address || {},
+            payment_method: 'card',
+          };
 
-                this.loading$
-                  .pipe(
-                    filter((isLoading) => !isLoading),
-                    take(1),
-                  )
-                  .subscribe(() => {
-                    this.router.navigate(['/account/orders']);
-                    this.isSubmitting = false;
-                  });
-              },
-              error: (error: any) => {
-                alert('Failed to place order: ' + (error.error?.message || error.message));
-                this.isSubmitting = false;
-              },
-            });
-          })
-          .unsubscribe();
-      })
-      .unsubscribe();
+          this.shopApi.createOrder(orderPayload).subscribe({
+            next: (response: any) => {
+              alert('Order placed successfully! Order #' + response.order_number);
+              this.store.dispatch(CartActions.clearCart());
+              this.store.dispatch(UserActions.loadOrders({ page: 1, pageSize: 3 }));
+              localStorage.removeItem('cart');
+              sessionStorage.removeItem('checkout_address');
+
+              this.loading$
+                .pipe(
+                  filter((isLoading) => !isLoading),
+                  take(1),
+                )
+                .subscribe(() => {
+                  this.router.navigate(['/account/orders']);
+                  this.isSubmitting = false;
+                });
+            },
+            error: (error: any) => {
+              console.error('Order creation error:', error);
+              alert('Failed to place order: ' + (error.error?.message || error.message));
+              this.isSubmitting = false;
+            },
+          });
+        },
+        error: (error: any) => {
+          console.error('Error getting cart data:', error);
+          alert('Failed to retrieve cart data');
+          this.isSubmitting = false;
+        },
+      });
   }
 
   formatPrice(price: number | null | undefined): string {

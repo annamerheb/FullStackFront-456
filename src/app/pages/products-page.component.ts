@@ -210,8 +210,8 @@ export interface Product {
                   <button
                     mat-icon-button
                     (click)="toggleWishlist(product)"
-                    [class.text-red-500]="selectIsInWishlist(product.id) | async"
-                    class="text-slate-400 transition hover:text-red-500"
+                    [style.color]="(selectIsInWishlist(product.id) | async) ? '#0ea5e9' : '#cbd5e1'"
+                    class="transition hover:text-sky-600"
                   >
                     <mat-icon class="text-lg">{{
                       (selectIsInWishlist(product.id) | async) ? 'favorite' : 'favorite_border'
@@ -283,6 +283,15 @@ export interface Product {
         transform: translateY(-3px);
         box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
         border-color: #bfdbfe;
+      }
+
+      button[mat-icon-button] mat-icon {
+        color: inherit !important;
+        fill: var(--color-primary) !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--color-primary) !important;
       }
 
       .mat-mdc-select-panel,

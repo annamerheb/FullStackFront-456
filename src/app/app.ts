@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { HeaderComponent } from './components/header.component';
 import { appInit } from './state/app.actions';
+import { restoreAuthFromStorage } from './state/auth/auth.actions';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class App implements OnInit {
   private readonly store = inject(Store);
 
   ngOnInit() {
+    this.store.dispatch(restoreAuthFromStorage());
     this.store.dispatch(appInit());
   }
 }

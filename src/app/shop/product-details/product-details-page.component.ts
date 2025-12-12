@@ -49,13 +49,18 @@ import { isInStock, getStockStatus, StockStatus } from '../../services/stock.uti
           <div class="flex gap-3">
             <button
               mat-icon-button
-              class="rounded-full border border-slate-200 bg-white hover:bg-slate-100"
-              [class.!bg-red-50]="isInWishlist$ | async"
+              class="!rounded-full border border-slate-200 bg-white hover:!bg-slate-100"
+              [class.!bg-blue-50]="isInWishlist$ | async"
+              [class.!hover:bg-blue-50]="isInWishlist$ | async"
               (click)="toggleWishlist()"
             >
-              <mat-icon [class.text-red-500]="isInWishlist$ | async">{{
-                (isInWishlist$ | async) ? 'favorite' : 'favorite_border'
-              }}</mat-icon>
+              <mat-icon
+                [class.text-slate-400]="!(isInWishlist$ | async)"
+                [ngStyle]="
+                  (isInWishlist$ | async) ? { color: 'var(--color-primary) !important' } : {}
+                "
+                >{{ (isInWishlist$ | async) ? 'favorite' : 'favorite_border' }}</mat-icon
+              >
             </button>
             <button mat-raised-button color="primary" routerLink="/shop/products">
               ← Back to Products
@@ -170,6 +175,7 @@ import { isInStock, getStockStatus, StockStatus } from '../../services/stock.uti
                       min="1"
                       [max]="product.stock"
                       formControlName="quantity"
+                      (input)="addToCartForm.get('quantity')?.markAsTouched()"
                     />
                     <mat-error *ngIf="addToCartForm.get('quantity')?.hasError('required')">
                       La quantité est requise
@@ -177,11 +183,17 @@ import { isInStock, getStockStatus, StockStatus } from '../../services/stock.uti
                     <mat-error *ngIf="addToCartForm.get('quantity')?.hasError('min')">
                       La quantité doit être au moins 1
                     </mat-error>
-                    <mat-error *ngIf="addToCartForm.get('quantity')?.hasError('max')">
-                      Stock insuffisant pour le produit {{ product.name }}. Maximum disponible:
-                      {{ product.stock }}
-                    </mat-error>
                   </mat-form-field>
+                  <p
+                    class="text-xs text-red-600 font-semibold mt-2"
+                    *ngIf="
+                      product &&
+                      (addToCartForm.get('quantity')?.value ?? 0) > product.stock &&
+                      addToCartForm.get('quantity')?.touched
+                    "
+                  >
+                    ✗ Stock insuffisant. Maximum disponible: {{ product.stock }}
+                  </p>
                   <p class="text-xs text-slate-500 mt-2" *ngIf="product">
                     Stock disponible:
                     <span class="font-semibold">{{ product.stock }}</span> article(s)
@@ -190,10 +202,17 @@ import { isInStock, getStockStatus, StockStatus } from '../../services/stock.uti
 
                 <button
                   mat-raised-button
-                  color="primary"
+                  [color]="
+                    (addToCartForm.get('quantity')?.value ?? 0) > product.stock ? 'warn' : 'primary'
+                  "
                   type="submit"
                   class="w-full h-12 !rounded-lg !font-semibold"
-                  [disabled]="addToCartForm.invalid || !product || product.stock === 0"
+                  [disabled]="
+                    addToCartForm.invalid ||
+                    !product ||
+                    product.stock === 0 ||
+                    (addToCartForm.get('quantity')?.value ?? 0) > product.stock
+                  "
                 >
                   <mat-icon>shopping_cart</mat-icon>
                   {{ product && product.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier' }}
@@ -278,6 +297,26 @@ import { isInStock, getStockStatus, StockStatus } from '../../services/stock.uti
       .containerbg {
         background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
+
+      :host ::ng-deep button[mat-raised-button][color='primary'] {
+        background-color: var(--color-primary) !important;
+        color: white !important;
+      }
+
+      :host ::ng-deep button[mat-raised-button][color='primary']:disabled {
+        background-color: #9ca3af !important;
+        color: rgba(0, 0, 0, 0.38) !important;
+      }
+
+      :host ::ng-deep button[mat-raised-button][color='warn'] {
+        background-color: #dc2626 !important;
+        color: white !important;
+      }
+
+      :host ::ng-deep button[mat-raised-button][color='warn']:disabled {
+        background-color: #9ca3af !important;
+        color: rgba(0, 0, 0, 0.38) !important;
+      }
     `,
   ],
 })
@@ -325,11 +364,7 @@ export class ProductDetailsPageComponent implements OnInit {
           // Set max quantity validator based on available stock
           this.addToCartForm
             .get('quantity')
-            ?.setValidators([
-              Validators.required,
-              Validators.min(1),
-              Validators.max(product.stock),
-            ]);
+            ?.setValidators([Validators.required, Validators.min(1)]);
           this.addToCartForm.get('quantity')?.updateValueAndValidity();
           this.isInWishlist$ = this.store.select(selectIsInWishlist(product.id));
         },

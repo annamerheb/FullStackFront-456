@@ -28,7 +28,7 @@ import { RouterLink } from '@angular/router';
               routerLink="/dev"
               class="!border-sky-500 !text-sky-600"
             >
-              ← Back to Dev
+              Dev Index
             </button>
           </div>
 

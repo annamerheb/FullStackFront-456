@@ -135,9 +135,23 @@ import { OrderDetails } from '../../services/types';
 
             <!-- Summary Section -->
             <div class="space-y-3 rounded-lg border border-slate-200 bg-sky-50 p-6 shadow-sm">
-              <div class="flex justify-between">
-                <span class="text-slate-700">Nombre d'articles:</span>
-                <span class="font-semibold">{{ order.itemCount }}</span>
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-700">Sous-total:</span>
+                <span class="font-semibold">
+                  {{ order.subtotalPrice || order.totalPrice | currency: 'EUR' }}
+                </span>
+              </div>
+              <div *ngIf="order.shippingCost !== undefined" class="flex justify-between text-sm">
+                <span class="text-slate-700">Livraison:</span>
+                <span class="font-semibold">
+                  {{ order.shippingCost | currency: 'EUR' }}
+                </span>
+              </div>
+              <div *ngIf="order.taxAmount !== undefined" class="flex justify-between text-sm">
+                <span class="text-slate-700">Taxe (8%):</span>
+                <span class="font-semibold">
+                  {{ order.taxAmount | currency: 'EUR' }}
+                </span>
               </div>
               <div class="flex justify-between border-t pt-3">
                 <span class="text-lg font-semibold text-slate-900">Montant total:</span>

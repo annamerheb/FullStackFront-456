@@ -91,7 +91,10 @@ import { combineLatest, map } from 'rxjs';
 
       <mat-form-field appearance="fill" class="delivery-select" *ngIf="!hidePromoAndDelivery">
         <mat-label>Delivery Option</mat-label>
-        <mat-select (selectionChange)="selectDelivery($event.value)">
+        <mat-select
+          [value]="selectedDelivery$ | async"
+          (selectionChange)="selectDelivery($event.value)"
+        >
           <mat-option *ngFor="let option of availableOptions$ | async" [value]="option">
             {{ option.name }} - {{ option.cost | currency: 'EUR' }} ({{ option.estimatedDays }}
             days)
@@ -192,6 +195,28 @@ import { combineLatest, map } from 'rxjs';
       .delivery-select {
         width: 100%;
         margin-bottom: 16px;
+      }
+
+      :host ::ng-deep .delivery-select .mdc-text-field__input {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+        font-size: 14px !important;
+      }
+
+      :host ::ng-deep .mat-mdc-select-panel .mat-mdc-option {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+        font-size: 14px !important;
+      }
+
+      :host ::ng-deep .mat-mdc-select-panel {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+      }
+
+      :host ::ng-deep .mdc-select__anchor {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
       }
 
       .summary-row {

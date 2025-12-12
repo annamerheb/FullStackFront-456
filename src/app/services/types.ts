@@ -75,6 +75,9 @@ export interface OrderSummary {
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   totalPrice: number;
   itemCount: number;
+  subtotalPrice?: number;
+  shippingCost?: number;
+  taxAmount?: number;
 }
 
 export interface OrderDetails extends OrderSummary {

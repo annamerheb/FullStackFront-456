@@ -131,8 +131,9 @@ import { CartSummaryComponent } from './cart-summary.component';
 
               <button
                 mat-raised-button
+                color="primary"
                 routerLink="/shop/checkout/summary"
-                class="mt-4 w-full h-12 !bg-gradient-to-r !from-sky-500 !to-cyan-600 !text-white font-semibold !rounded-lg"
+                class="mt-4 w-full h-12 !rounded-lg font-semibold"
               >
                 <mat-icon class="mr-2">payment</mat-icon>
                 Proceed to Checkout

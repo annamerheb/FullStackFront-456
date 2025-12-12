@@ -60,4 +60,9 @@ export const authReducer = createReducer(
     loading: false,
     error,
   })),
+  on(AuthActions.restoreAuthFromStorageSuccess, (state, { access, refresh }) => ({
+    ...state,
+    access,
+    refresh,
+  })),
 );
