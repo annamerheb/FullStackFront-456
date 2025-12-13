@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { SkeletonLoaderComponent } from '../../../../components/skeleton-loader/skeleton-loader.component';
 import { Store } from '@ngrx/store';
 import * as ProductsActions from '../../../../state/products/products.actions';
 import {
@@ -62,6 +63,7 @@ export interface Product {
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
+    SkeletonLoaderComponent,
   ],
   template: `
     <div class="min-h-screen containerbg px-4 py-12">
@@ -115,10 +117,12 @@ export interface Product {
           </form>
         </div>
 
-        <!-- Loading State -->
-        <div *ngIf="loading$ | async" class="flex justify-center py-20">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
+        <!-- Loading State - Skeleton Loader -->
+        <app-skeleton-loader
+          *ngIf="loading$ | async"
+          type="card"
+          [count]="12"
+        ></app-skeleton-loader>
 
         <!-- Error State -->
         <div
@@ -221,10 +225,15 @@ export interface Product {
                   <button
                     mat-icon-button
                     (click)="toggleWishlist(product)"
+                    [attr.aria-label]="
+                      (selectIsInWishlist(product.id) | async)
+                        ? 'Remove from wishlist: ' + product.name
+                        : 'Add to wishlist: ' + product.name
+                    "
                     [style.color]="(selectIsInWishlist(product.id) | async) ? '#0ea5e9' : '#cbd5e1'"
                     class="transition hover:text-sky-600"
                   >
-                    <mat-icon class="text-lg">{{
+                    <mat-icon class="text-lg" aria-hidden="true">{{
                       (selectIsInWishlist(product.id) | async) ? 'favorite' : 'favorite_border'
                     }}</mat-icon>
                   </button>

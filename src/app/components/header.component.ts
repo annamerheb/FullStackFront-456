@@ -86,7 +86,7 @@ import * as AuthActions from '../state/auth/auth.actions';
             class="relative text-slate-600 transition hover:text-red-600"
             [attr.aria-label]="'Wishlist: ' + (wishlistCount$ | async) + ' items'"
           >
-            <mat-icon>favorite</mat-icon>
+            <mat-icon aria-hidden="true">favorite</mat-icon>
             <span
               *ngIf="wishlistCount$ | async as count"
               [class.hidden]="count === 0"
@@ -102,7 +102,7 @@ import * as AuthActions from '../state/auth/auth.actions';
             class="relative text-slate-600 transition hover:text-sky-600"
             [attr.aria-label]="'Cart: ' + (cartCount$ | async) + ' items'"
           >
-            <mat-icon>shopping_cart</mat-icon>
+            <mat-icon aria-hidden="true">shopping_cart</mat-icon>
             <span
               *ngIf="cartCount$ | async as count"
               [class.hidden]="count === 0"

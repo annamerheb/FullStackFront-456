@@ -134,9 +134,9 @@ import { getStockStatus, StockStatus } from '../../../../services/stock.utils';
                     mat-icon-button
                     (click)="removeFromWishlist(item.id)"
                     class="!text-red-500 transition hover:!text-red-700"
-                    title="Remove from wishlist"
+                    [attr.aria-label]="'Remove ' + item.name + ' from wishlist'"
                   >
-                    <mat-icon>favorite</mat-icon>
+                    <mat-icon aria-hidden="true">favorite</mat-icon>
                   </button>
                 </div>
               </div>

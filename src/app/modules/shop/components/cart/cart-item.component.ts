@@ -75,8 +75,9 @@ import { CartItem } from '../../../../state/cart/cart.models';
           (click)="onRemove()"
           class="remove-btn"
           matTooltip="Remove from cart"
+          [attr.aria-label]="'Remove ' + item.product.name + ' from cart'"
         >
-          <mat-icon>delete</mat-icon>
+          <mat-icon aria-hidden="true">delete</mat-icon>
         </button>
       </div>
     </mat-card>

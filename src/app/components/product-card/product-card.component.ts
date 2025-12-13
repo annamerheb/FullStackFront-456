@@ -34,8 +34,13 @@ export interface Product {
         class="absolute top-2 right-2 z-10 rounded-full bg-white shadow-md hover:bg-slate-100"
         [class.!bg-red-50]="isInWishlist$ | async"
         (click)="toggleWishlist()"
+        [attr.aria-label]="
+          (isInWishlist$ | async)
+            ? 'Remove ' + name + ' from wishlist'
+            : 'Add ' + name + ' to wishlist'
+        "
       >
-        <mat-icon [class.text-red-500]="isInWishlist$ | async">{{
+        <mat-icon [class.text-red-500]="isInWishlist$ | async" aria-hidden="true">{{
           (isInWishlist$ | async) ? 'favorite' : 'favorite_border'
         }}</mat-icon>
       </button>

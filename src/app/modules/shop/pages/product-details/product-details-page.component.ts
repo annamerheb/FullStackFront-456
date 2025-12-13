@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReviewsSectionComponent } from './reviews-section.component';
+import { ProductDetailSkeletonComponent } from './product-details-skeleton.component';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { Product } from '../../../../services/types';
@@ -35,6 +36,7 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
     MatSnackBarModule,
     ReactiveFormsModule,
     ReviewsSectionComponent,
+    ProductDetailSkeletonComponent,
   ],
   template: `
     <div class="min-h-screen containerbg px-4 py-12">
@@ -54,8 +56,12 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
               [class.!bg-blue-50]="isInWishlist$ | async"
               [class.!hover:bg-blue-50]="isInWishlist$ | async"
               (click)="toggleWishlist()"
+              [attr.aria-label]="
+                (isInWishlist$ | async) ? 'Remove from wishlist' : 'Add to wishlist'
+              "
             >
               <mat-icon
+                aria-hidden="true"
                 [class.text-slate-400]="!(isInWishlist$ | async)"
                 [ngStyle]="
                   (isInWishlist$ | async) ? { color: 'var(--color-primary) !important' } : {}
@@ -63,7 +69,12 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
                 >{{ (isInWishlist$ | async) ? 'favorite' : 'favorite_border' }}</mat-icon
               >
             </button>
-            <button mat-raised-button color="primary" routerLink="/shop/products">
+            <button
+              mat-raised-button
+              color="primary"
+              routerLink="/shop/products"
+              aria-label="Back to Products"
+            >
               ← Back to Products
             </button>
           </div>
@@ -231,10 +242,8 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
           </div>
         </div>
 
-        <!-- Loading State -->
-        <div *ngIf="!product" class="flex justify-center py-20">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
+        <!-- Loading State - Skeleton Loader -->
+        <app-product-details-skeleton *ngIf="!product"></app-product-details-skeleton>
 
         <!-- Reviews Section -->
         <app-reviews-section *ngIf="product" [productId]="product.id"></app-reviews-section>

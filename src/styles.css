@@ -1,5 +1,42 @@
 @import 'tailwindcss';
 
+/* ===== Accessibility (a11y) ===== */
+
+/* Visible focus indicator for keyboard navigation */
+:focus-visible {
+  outline: 3px solid var(--color-primary, #0284c7) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Ensure focus is visible on buttons and links */
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-primary, #0284c7) !important;
+  outline-offset: 2px;
+}
+
+/* Skip to main content link (visible on focus) */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary, #0284c7);
+  color: white;
+  padding: 8px 16px;
+  z-index: 100;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
 /* ===== Modern Design System ===== */
 
 /* Color Palette */

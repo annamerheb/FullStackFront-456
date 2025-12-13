@@ -1,13 +1,14 @@
-import type { Preview } from '@storybook/angular';
-import { setCompodocJson } from '@storybook/addon-docs/angular';
+import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig } from '@storybook/angular';
 import { provideMockStore } from '@ngrx/store/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
-import docJson from '../documentation.json';
-setCompodocJson(docJson);
+import { LoginFormComponent } from '../app/components/login-form/login-form.component';
 
-const preview: Preview = {
+const meta: Meta<LoginFormComponent> = {
+  component: LoginFormComponent,
+  title: 'Components/Login Form',
+  tags: ['autodocs'],
   decorators: [
     applicationConfig({
       providers: [
@@ -22,14 +23,11 @@ const preview: Preview = {
       ],
     }),
   ],
-  parameters: {
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i,
-      },
-    },
-  },
 };
 
-export default preview;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {};
+
+export const WithError: Story = {};
