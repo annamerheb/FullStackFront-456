@@ -2,11 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { map, tap } from 'rxjs/operators';
 import * as AuthActions from './auth.actions';
+import { NotificationService } from '../../services/notification.service';
 
 @Injectable()
 export class AuthEffects {
   private readonly actions$ = inject(Actions);
   private readonly storageKey = 'auth_tokens';
+  private readonly notification = inject(NotificationService);
 
   login$ = createEffect(() =>
     this.actions$.pipe(
@@ -26,6 +28,7 @@ export class AuthEffects {
         ofType(AuthActions.loginSuccess),
         tap(({ access, refresh }) => {
           localStorage.setItem(this.storageKey, JSON.stringify({ access, refresh }));
+          this.notification.success('✅ Connexion réussie');
         }),
       ),
     { dispatch: false },
@@ -62,6 +65,7 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.logout),
         tap(() => {
+          this.notification.success('👋 Déconnexion réussie');
           localStorage.removeItem(this.storageKey);
         }),
       ),

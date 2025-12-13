@@ -188,7 +188,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe((loading) => {
           if (!loading) {
-            this.snackBar.open('Profil mis à jour avec succès!', 'Fermer', { duration: 3000 });
             this.router.navigate(['/account']);
           }
         });

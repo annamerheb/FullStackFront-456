@@ -7,8 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReviewsSectionComponent } from './reviews-section.component';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { Product } from '../../../../services/types';
@@ -33,6 +34,7 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
     MatProgressSpinnerModule,
     MatSnackBarModule,
     ReactiveFormsModule,
+    ReviewsSectionComponent,
   ],
   template: `
     <div class="min-h-screen containerbg px-4 py-12">
@@ -234,64 +236,13 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
           <mat-spinner diameter="40"></mat-spinner>
         </div>
 
-        <!-- Reviews Section - Optional: to be added from original location when needed -->
+        <!-- Reviews Section -->
+        <app-reviews-section *ngIf="product" [productId]="product.id"></app-reviews-section>
       </div>
     </div>
   `,
   styles: [
     `
-      :host ::ng-deep .snackbar-success {
-        background: white !important;
-        border-radius: 8px !important;
-        padding: 16px 20px !important;
-        box-shadow:
-          0 10px 25px -5px rgba(0, 0, 0, 0.1),
-          0 0 0 1px rgba(226, 232, 240, 0.5) !important;
-        border: none !important;
-        animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-      }
-
-      :host ::ng-deep .snackbar-success .mdc-snackbar__label {
-        color: #1e293b !important;
-        font-size: 15px !important;
-        font-weight: 500 !important;
-        font-family:
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          sans-serif !important;
-      }
-
-      :host ::ng-deep .snackbar-success .mat-mdc-button {
-        color: #0284c7 !important;
-        font-weight: 600 !important;
-      }
-
-      :host ::ng-deep .snackbar-success .mat-mdc-button:hover {
-        background-color: rgba(2, 132, 199, 0.08) !important;
-      }
-
-      :host ::ng-deep .mat-mdc-snack-bar-container.snackbar-success {
-        --mdc-snackbar-container-color: transparent !important;
-        background: transparent !important;
-      }
-
-      :host ::ng-deep .mdc-snackbar__surface {
-        background: white !important;
-      }
-
-      @keyframes slideInUp {
-        from {
-          opacity: 0;
-          transform: translateY(100px) translateX(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) translateX(0);
-        }
-      }
-
       .containerbg {
         background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #e0e7ff 100%);
       }
@@ -333,7 +284,6 @@ export class ProductDetailsPageComponent implements OnInit {
     private store: Store,
     private fb: FormBuilder,
     private api: ShopApiService,
-    private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
   ) {
     this.addToCartForm = this.fb.group({
@@ -380,13 +330,6 @@ export class ProductDetailsPageComponent implements OnInit {
     if (this.product && this.addToCartForm.valid) {
       // Check if product is in stock
       if (!isInStock(this.product.stock)) {
-        this.snackBar.open(`✗ "${this.product.name}" est en rupture de stock`, 'Fermer', {
-          duration: 3500,
-          horizontalPosition: 'end',
-          verticalPosition: 'bottom',
-          panelClass: ['snackbar-error'],
-          politeness: 'assertive',
-        });
         return;
       }
 
@@ -394,24 +337,7 @@ export class ProductDetailsPageComponent implements OnInit {
 
       this.store.dispatch(CartActions.addToCart({ product: this.product, quantity }));
 
-      this.snackBar.open(`✓ ${quantity}x "${this.product.name}" ajouté au panier`, 'Fermer', {
-        duration: 3500,
-        horizontalPosition: 'end',
-        verticalPosition: 'bottom',
-        panelClass: ['snackbar-success'],
-        politeness: 'polite',
-      });
-
       this.addToCartForm.reset({ quantity: 1 });
-    } else if (this.addToCartForm.get('quantity')?.hasError('max')) {
-      const maxStock = this.product?.stock || 0;
-      this.snackBar.open(`✗ Stock insuffisant. Maximum disponible: ${maxStock}`, 'Fermer', {
-        duration: 3500,
-        horizontalPosition: 'end',
-        verticalPosition: 'bottom',
-        panelClass: ['snackbar-error'],
-        politeness: 'assertive',
-      });
     }
   }
 

@@ -1,0 +1,55 @@
+/* Snackbar Success */
+::ng-deep .snackbar-success {
+  background-color: #4caf50 !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-success .mdc-button {
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-success .mat-mdc-button {
+  color: #ffffff !important;
+}
+
+/* Snackbar Error */
+::ng-deep .snackbar-error {
+  background-color: #f44336 !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-error .mdc-button {
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-error .mat-mdc-button {
+  color: #ffffff !important;
+}
+
+/* Snackbar Warning */
+::ng-deep .snackbar-warning {
+  background-color: #ff9800 !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-warning .mdc-button {
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-warning .mat-mdc-button {
+  color: #ffffff !important;
+}
+
+/* Snackbar Info */
+::ng-deep .snackbar-info {
+  background-color: #2196f3 !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-info .mdc-button {
+  color: #ffffff !important;
+}
+
+::ng-deep .snackbar-info .mat-mdc-button {
+  color: #ffffff !important;
+}

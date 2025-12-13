@@ -7,12 +7,36 @@ import { HttpClient } from '@angular/common/http';
 import * as CartActions from './cart.actions';
 import { selectCartItems } from './cart.selectors';
 import { appInit } from '../app.actions';
+import { NotificationService } from '../../services/notification.service';
 
 @Injectable()
 export class CartEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store);
   private readonly http = inject(HttpClient);
+  private readonly notification = inject(NotificationService);
+
+  addToCartNotification$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(CartActions.addToCart),
+        tap(({ product, quantity }) => {
+          this.notification.success(`✅ "${product.name}" x${quantity} ajouté au panier`);
+        }),
+      ),
+    { dispatch: false },
+  );
+
+  removeFromCartNotification$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(CartActions.removeFromCart),
+        tap(({ productId }) => {
+          this.notification.success(`🗑️ Produit supprimé du panier`);
+        }),
+      ),
+    { dispatch: false },
+  );
 
   saveCartToStorage$ = createEffect(
     () =>
@@ -67,6 +91,7 @@ export class CartEffects {
             return this.http.post<any>('/api/cart/validate-stock/', payload).pipe(
               map((response) => {
                 if (response.valid) {
+                  this.notification.success('✅ Stock vérifié avec succès');
                   return CartActions.validateStockSuccess();
                 } else {
                   // Format error messages for display
@@ -80,6 +105,11 @@ export class CartEffects {
                     }
                     return error;
                   }) || ['Validation du stock échouée'];
+
+                  // Show first error as notification
+                  if (errors.length > 0) {
+                    this.notification.error(`❌ ${errors[0]}`);
+                  }
                   return CartActions.validateStockFailure({ errors });
                 }
               }),
@@ -104,6 +134,11 @@ export class CartEffects {
                   errors = [error.error.message];
                 } else {
                   errors = ['Impossible de valider le stock'];
+                }
+
+                // Show notification for error
+                if (errors.length > 0) {
+                  this.notification.error(`⚠️ ${errors[0]}`);
                 }
 
                 return of(CartActions.validateStockFailure({ errors }));

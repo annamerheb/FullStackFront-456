@@ -12,12 +12,14 @@ import {
 } from '../delivery/delivery.selectors';
 import { Store } from '@ngrx/store';
 import { combineLatest } from 'rxjs';
+import { NotificationService } from '../../services/notification.service';
 
 @Injectable()
 export class DiscountsEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store);
   private readonly http = inject(HttpClient);
+  private readonly notification = inject(NotificationService);
 
   applyCoupon$ = createEffect(() =>
     this.actions$.pipe(
@@ -56,6 +58,7 @@ export class DiscountsEffects {
                   this.store.dispatch(DeliveryActions.clearFreeShipping());
                 }
 
+                this.notification.success(`✅ Code promo "${code.toUpperCase()}" appliqué`);
                 return DiscountsActions.applyCouponSuccess({
                   coupon,
                   discountAmount: response.discount,
@@ -63,11 +66,13 @@ export class DiscountsEffects {
               }),
               catchError((error) => {
                 this.store.dispatch(DeliveryActions.clearFreeShipping());
+                const errorMsg =
+                  error.error?.error ||
+                  `Invalid promo code: "${code}". Try WELCOME10, FREESHIP, or VIP20.`;
+                this.notification.error(`❌ ${errorMsg}`);
                 return of(
                   DiscountsActions.applyCouponFailure({
-                    error:
-                      error.error?.error ||
-                      `Invalid promo code: "${code}". Try WELCOME10, FREESHIP, or VIP20.`,
+                    error: errorMsg,
                   }),
                 );
               }),
@@ -85,6 +90,7 @@ export class DiscountsEffects {
         tap(() => {
           // Immediately dispatch clearFreeShipping to ensure delivery state is updated
           this.store.dispatch(DeliveryActions.clearFreeShipping());
+          this.notification.success('🧹 Code promo supprimé');
         }),
       ),
     { dispatch: false },

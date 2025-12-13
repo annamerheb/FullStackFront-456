@@ -6,12 +6,14 @@ import { of } from 'rxjs';
 import { catchError, switchMap, map } from 'rxjs/operators';
 import * as ReviewsActions from './reviews.actions';
 import { Review } from './reviews.models';
+import { NotificationService } from '../../services/notification.service';
 
 @Injectable()
 export class ReviewsEffects {
   private readonly actions$ = inject(Actions);
   private readonly http = inject(HttpClient);
   private readonly store = inject(Store);
+  private readonly notification = inject(NotificationService);
 
   loadReviews$ = createEffect(() =>
     this.actions$.pipe(
@@ -35,8 +37,14 @@ export class ReviewsEffects {
       ofType(ReviewsActions.submitReview),
       switchMap(({ productId, rating, comment }) =>
         this.http.post<Review>(`/api/products/${productId}/reviews/`, { rating, comment }).pipe(
-          map((review) => ReviewsActions.submitReviewSuccess({ productId, review })),
-          catchError((error) => of(ReviewsActions.submitReviewError({ error: error.message }))),
+          map((review) => {
+            this.notification.success('✅ Avis publié avec succès');
+            return ReviewsActions.submitReviewSuccess({ productId, review });
+          }),
+          catchError((error) => {
+            this.notification.error("❌ Erreur lors de la publication de l'avis");
+            return of(ReviewsActions.submitReviewError({ error: error.message }));
+          }),
         ),
       ),
     ),

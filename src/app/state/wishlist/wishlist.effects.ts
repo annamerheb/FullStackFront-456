@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import * as WishlistActions from './wishlist.actions';
 import { selectWishlistItems } from './wishlist.selectors';
 import { ShopApiService } from '../../services/shop-api.service';
+import { NotificationService } from '../../services/notification.service';
 import { appInit } from '../app.actions';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class WishlistEffects {
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store);
   private readonly api = inject(ShopApiService);
+  private readonly notification = inject(NotificationService);
 
   saveWishlistToStorage$ = createEffect(
     () =>
@@ -22,10 +24,19 @@ export class WishlistEffects {
           WishlistActions.removeFromWishlist,
           WishlistActions.clearWishlist,
         ),
-        tap(() => {
+        tap((action) => {
           this.store.select(selectWishlistItems).subscribe((items) => {
             const productIds = items.map((item) => item.id);
             localStorage.setItem('wishlist', JSON.stringify(productIds));
+
+            // Show notifications
+            if (action.type === WishlistActions.addToWishlist.type) {
+              this.notification.success('❤️ Ajouté à votre wishlist');
+            } else if (action.type === WishlistActions.removeFromWishlist.type) {
+              this.notification.success('❤️ Supprimé de votre wishlist');
+            } else if (action.type === WishlistActions.clearWishlist.type) {
+              this.notification.success('🧹 Wishlist vidée');
+            }
           });
         }),
       ),

@@ -4,11 +4,13 @@ import { of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import * as UserActions from './user.actions';
 import { ShopApiService } from '../../services/shop-api.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Injectable()
 export class UserEffects {
   private actions$ = inject(Actions);
   private shopApi = inject(ShopApiService);
+  private notification = inject(NotificationService);
 
   loadUserProfile$ = createEffect(() =>
     this.actions$.pipe(
@@ -33,14 +35,18 @@ export class UserEffects {
       ofType(UserActions.updateUserProfile),
       switchMap(({ user }) =>
         this.shopApi.updateMe(user).pipe(
-          map((updatedUser) => UserActions.updateUserProfileSuccess({ user: updatedUser })),
-          catchError((error) =>
-            of(
+          map((updatedUser) => {
+            this.notification.success('✅ Profil mis à jour');
+            return UserActions.updateUserProfileSuccess({ user: updatedUser });
+          }),
+          catchError((error) => {
+            this.notification.error('❌ Erreur lors de la mise à jour du profil');
+            return of(
               UserActions.updateUserProfileFailure({
                 error: error.message || 'Failed to update user profile',
               }),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     ),
@@ -56,13 +62,14 @@ export class UserEffects {
               orders: response.results,
             }),
           ),
-          catchError((error) =>
-            of(
+          catchError((error) => {
+            this.notification.error('❌ Erreur lors du chargement des commandes');
+            return of(
               UserActions.loadOrdersFailure({
                 error: error.message || 'Failed to load orders',
               }),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     ),
@@ -74,13 +81,14 @@ export class UserEffects {
       switchMap(({ orderId }) =>
         this.shopApi.getOrder(orderId).pipe(
           map((order) => UserActions.loadOrderDetailsSuccess({ order })),
-          catchError((error) =>
-            of(
+          catchError((error) => {
+            this.notification.error('❌ Erreur lors du chargement des détails de la commande');
+            return of(
               UserActions.loadOrderDetailsFailure({
                 error: error.message || 'Failed to load order details',
               }),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     ),
