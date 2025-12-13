@@ -301,7 +301,7 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.params.subscribe((params) => {
+    this.route.params.pipe(take(1)).subscribe((params) => {
       const productId = +params['id'];
       this.loadProductDetails(productId);
     });
@@ -309,6 +309,9 @@ export class ProductDetailsPageComponent implements OnInit {
 
   private loadProductDetails(productId: number) {
     this.isLoading = true;
+    this.product = null; // Reset product to show skeleton
+    this.cdr.markForCheck();
+
     this.api
       .getProduct(productId)
       .pipe(
@@ -316,6 +319,7 @@ export class ProductDetailsPageComponent implements OnInit {
           this.isLoading = false;
           this.cdr.markForCheck();
         }),
+        take(1),
       )
       .subscribe({
         next: (product) => {
@@ -330,6 +334,7 @@ export class ProductDetailsPageComponent implements OnInit {
         },
         error: (error) => {
           console.error('Failed to load product:', error);
+          this.product = null;
           this.cdr.markForCheck();
         },
       });
