@@ -20,10 +20,10 @@ export class AdminEffects {
         this.shopApi.getAdminStats().pipe(
           map((stats) => AdminActions.loadAdminStatsSuccess({ stats })),
           catchError((error: any) => {
+            const errorMessage = error?.message || error?.error?.message || 'Unknown error';
+            console.error('[AdminStats Error]', errorMessage, error);
             this.notification.error('❌ Erreur lors du chargement des statistiques');
-            return of(
-              AdminActions.loadAdminStatsFailure({ error: error?.message || 'Unknown error' }),
-            );
+            return of(AdminActions.loadAdminStatsFailure({ error: errorMessage }));
           }),
         ),
       ),

@@ -20,6 +20,7 @@ export const adminReducer = createReducer(
 
   on(AdminActions.loadAdminStatsFailure, (state, { error }) => ({
     ...state,
+    stats: null,
     loading: false,
     error,
   })),

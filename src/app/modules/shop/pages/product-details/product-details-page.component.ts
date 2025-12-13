@@ -1,4 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -11,8 +17,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReviewsSectionComponent } from './reviews-section.component';
 import { ProductDetailSkeletonComponent } from './product-details-skeleton.component';
-import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { take, takeUntil } from 'rxjs/operators';
 import { Product } from '../../../../services/types';
 import * as CartActions from '../../../../state/cart/cart.actions';
 import * as WishlistActions from '../../../../state/wishlist/wishlist.actions';
@@ -278,11 +284,12 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
     `,
   ],
 })
-export class ProductDetailsPageComponent implements OnInit {
+export class ProductDetailsPageComponent implements OnInit, OnDestroy {
   product: Product | null = null;
   isLoading = true;
   addToCartForm: FormGroup;
   isInWishlist$!: Observable<boolean>;
+  private destroy$ = new Subject<void>();
 
   // Stock utilities
   getStockStatus = getStockStatus;
@@ -301,10 +308,15 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.params.pipe(take(1)).subscribe((params) => {
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const productId = +params['id'];
       this.loadProductDetails(productId);
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadProductDetails(productId: number) {
