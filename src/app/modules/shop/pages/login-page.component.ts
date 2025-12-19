@@ -52,7 +52,7 @@ import { MatIconModule } from '@angular/material/icon';
             <p class="text-sm text-red-700">{{ error }}</p>
           </div>
 
-          <app-login-form (submit)="handleLogin($event)"></app-login-form>
+          <app-login-form (formSubmit)="handleLogin($event)"></app-login-form>
 
           <div class="mt-6 p-3 bg-white/30 rounded-lg border border-white/40">
             <p class="text-xs text-slate-700 text-center">
