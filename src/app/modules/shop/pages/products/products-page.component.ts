@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,8 +31,8 @@ import {
   selectIsInWishlist,
   selectWishlistItems,
 } from '../../../../state/wishlist/wishlist.selectors';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { getStockStatus, StockStatus } from '../../../../services/stock.utils';
 
 export interface Product {
@@ -119,24 +119,63 @@ export interface Product {
 
         <!-- Loading State - Skeleton Loader -->
         <app-skeleton-loader
-          *ngIf="loading$ | async"
+          *ngIf="(loading$ | async) && !(error$ | async)"
           type="card"
           [count]="12"
         ></app-skeleton-loader>
 
-        <!-- Error State -->
+        <!-- Error State with Retry Button -->
         <div
           *ngIf="error$ | async as error"
-          class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          class="mb-6 rounded-xl border-2 border-red-300 bg-red-50 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
-          ⚠️ {{ error }}
+          <div class="flex items-center gap-3">
+            <mat-icon class="text-red-600 text-2xl">error_outline</mat-icon>
+            <div>
+              <p class="font-semibold text-red-900">Oops! Something went wrong</p>
+              <p class="text-red-700 text-sm mt-1">{{ error }}</p>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            (click)="retryLastRequest()"
+            color="warn"
+            class="flex-shrink-0 !rounded-lg !font-semibold"
+          >
+            <mat-icon class="text-sm mr-1">refresh</mat-icon>
+            Try Again
+          </button>
         </div>
 
+        <!-- Empty State Template (defined before use) -->
+        <ng-template #noProducts>
+          <div
+            class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-white to-slate-50 px-6 py-16 text-center"
+          >
+            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+              <mat-icon class="text-2xl text-slate-500">shopping_cart</mat-icon>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">No products found</h3>
+            <p class="mt-2 text-slate-600 max-w-md">
+              No products match your current filters. Try adjusting your criteria or resetting all
+              filters.
+            </p>
+            <button
+              mat-raised-button
+              (click)="resetFilters()"
+              class="mt-6 !rounded-lg !font-semibold !bg-sky-600 !text-white hover:!bg-sky-700"
+            >
+              <mat-icon class="text-sm mr-1">restart_alt</mat-icon>
+              Reset Filters
+            </button>
+          </div>
+        </ng-template>
+
         <!-- Products Grid -->
-        <div *ngIf="products$ | async as products">
+        <div *ngIf="products$ | async as products; else noProducts">
           <div
             class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            *ngIf="(products?.length ?? 0) > 0"
+            *ngIf="(products?.length ?? 0) > 0 && !(loading$ | async)"
           >
             <div
               *ngFor="let product of products; trackBy: trackByProductId"
@@ -242,21 +281,6 @@ export interface Product {
             </div>
           </div>
 
-          <div
-            *ngIf="(products?.length ?? 0) === 0"
-            class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/80 px-6 py-10 text-center text-slate-500"
-          >
-            <div
-              class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-sky-50 text-sky-500"
-            >
-              <mat-icon>shopping_cart</mat-icon>
-            </div>
-            <p class="text-sm font-medium">No products found</p>
-            <p class="mt-1 text-xs text-slate-400">
-              Try adjusting your filters or reset the page &amp; rating.
-            </p>
-          </div>
-
           <div *ngIf="(products?.length ?? 0) > 0" class="flex justify-center py-4">
             <mat-paginator
               [length]="totalProducts"
@@ -339,7 +363,10 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   pageSize = 8;
   currentPage = 0;
   private destroy$ = new Subject<void>();
+  private filterChanged$ = new Subject<void>();
+  private urlRestored$ = new BehaviorSubject<boolean>(false);
   wishlistItems: any[] = [];
+  private lastFilters: any = null;
 
   // New composed selectors for catalog analytics
   discountedProducts$: Observable<any>;
@@ -359,6 +386,8 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private store: Store,
+    private router: Router,
+    private route: ActivatedRoute,
   ) {
     this.filterForm = this.fb.group({
       pageSize: [8],
@@ -394,22 +423,141 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.applyFilters();
+    // Step 1: Restore filters from URL on init (Back/Forward support)
+    this.route.queryParams
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((params) => {
+          this.restoreFiltersFromUrl(params);
+          this.urlRestored$.next(true);
+          return this.urlRestored$;
+        }),
+      )
+      .subscribe();
 
-    this.filterForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.currentPage = 0;
+    // Step 2: Setup debounced filter changes (500ms) with API spam prevention
+    this.filterForm.valueChanges
+      .pipe(
+        // Wait 500ms after user stops typing to avoid API spam
+        debounceTime(500),
+        // Only react to actual changes
+        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+        // Ensure URL was restored before processing changes
+        switchMap(() => {
+          if (!this.urlRestored$.getValue()) {
+            return this.urlRestored$.pipe(
+              distinctUntilChanged(),
+              switchMap(() => {
+                return this.applyFilterChanges();
+              }),
+            );
+          }
+          return this.applyFilterChanges();
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
+
+    // Step 3: Initial products load with restored filters
+    this.applyFilters();
+  }
+
+  /**
+   * Apply filter changes with API call and URL sync
+   */
+  private applyFilterChanges(): Observable<void> {
+    return new Observable((observer) => {
+      this.currentPage = 0; // Reset to first page on filter change
       this.pageSize = Number(this.filterForm.get('pageSize')?.value) || 8;
+
+      // Sync URL with current filters
+      this.syncFiltersToUrl();
+
+      // Load products
       this.loadProducts();
+
+      observer.next();
+      observer.complete();
     });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.filterChanged$.complete();
+  }
+
+  /**
+   * Restore filter values from URL query params (for Back/Forward support)
+   * Handles the browser back/forward navigation to restore the exact catalog state
+   */
+  private restoreFiltersFromUrl(params: any): void {
+    if (Object.keys(params).length > 0) {
+      const pageSize = params['pageSize'] ? parseInt(params['pageSize'], 10) : 8;
+      const minRating = params['minRating'] ? parseFloat(params['minRating']) : 0;
+      const ordering = params['ordering'] || '';
+      const page = params['page'] ? parseInt(params['page'], 10) : 0;
+
+      // Update form without triggering valueChanges to avoid duplicate API calls
+      this.filterForm.patchValue({ pageSize, minRating, ordering }, { emitEvent: false });
+
+      this.currentPage = page;
+      this.pageSize = pageSize;
+
+      // Load products with restored filters
+      this.loadProducts();
+    }
+  }
+
+  /**
+   * Sync current filter values to URL query params
+   * Ensures browser history has all necessary state to restore catalog state via back/forward
+   */
+  private syncFiltersToUrl(): void {
+    const pageSize = Number(this.filterForm.get('pageSize')?.value) || 8;
+    const minRating = Number(this.filterForm.get('minRating')?.value) || 0;
+    const ordering = this.filterForm.get('ordering')?.value || '';
+
+    const queryParams: any = {
+      pageSize: pageSize.toString(),
+      minRating: minRating.toString(),
+      page: this.currentPage.toString(),
+    };
+
+    // Only add ordering if it's not the default (empty) value
+    if (ordering) {
+      queryParams['ordering'] = ordering;
+    }
+
+    // Update URL without reloading the component
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      // Replace history instead of adding new entry when just filtering
+      queryParamsHandling: 'merge',
+    });
   }
 
   applyFilters(): void {
     this.currentPage = 0;
+    this.syncFiltersToUrl();
+    this.loadProducts();
+  }
+
+  /**
+   * Reset filters to default values and reload products
+   */
+  resetFilters(): void {
+    this.filterForm.reset(
+      {
+        pageSize: 8,
+        minRating: 0,
+        ordering: '',
+      },
+      { emitEvent: false }, // Prevent triggering debounce
+    );
+    this.currentPage = 0;
+    this.syncFiltersToUrl();
     this.loadProducts();
   }
 
@@ -422,6 +570,14 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
       pageSize: this.pageSize,
     });
     this.filterForm.patchValue({ pageSize: this.pageSize }, { emitEvent: false });
+    this.syncFiltersToUrl();
+    this.loadProducts();
+  }
+
+  /**
+   * Retry last request if API error occurred
+   */
+  retryLastRequest(): void {
     this.loadProducts();
   }
 
@@ -460,17 +616,23 @@ export class ProductsPageComponent implements OnInit, OnDestroy {
     return product.price - (product.price * product.discount) / 100;
   }
 
+  /**
+   * Load products with current filters
+   * Dispatches action to NgRx store which will trigger API call if debounce is passed
+   */
   private loadProducts(): void {
     const pageSize = this.pageSize;
     const minRating = Number(this.filterForm.get('minRating')?.value) || 0;
+    const ordering = this.filterForm.get('ordering')?.value || '';
 
     const filters = {
       page: this.currentPage,
       pageSize,
       minRating,
-      ordering: this.filterForm.get('ordering')?.value || '',
+      ordering,
     };
 
+    this.lastFilters = filters;
     console.log('loadProducts() called with filters:', filters);
     this.store.dispatch(ProductsActions.loadProducts({ filters }));
   }

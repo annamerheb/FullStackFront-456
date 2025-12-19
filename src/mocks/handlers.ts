@@ -35,7 +35,7 @@ const sanitizeOrder = (order: any) => ({
   },
 });
 
-let dynamicUser: any = {
+const dynamicUser: any = {
   id: 'user-demo-123',
   username: 'demo',
   email: 'demo@example.com',
@@ -53,7 +53,7 @@ let dynamicUser: any = {
   createdAt: '2024-01-15T10:30:00Z',
 };
 
-let dynamicOrders: any[] = [
+const dynamicOrders: any[] = [
   {
     id: 'order-001',
     order_number: 'ORD-ABC123456',
@@ -107,7 +107,7 @@ let dynamicOrders: any[] = [
 
 let dynamicWishlist: number[] = [];
 
-const dynamicReviews: { [productId: number]: any[] } = {
+const dynamicReviews: Record<number, any[]> = {
   1: [
     {
       id: 1,
@@ -542,7 +542,7 @@ export const handlers = [
 
     let discount = 0;
     let shipping = body.shipping || 10; // Default shipping cost
-    let appliedPromos: string[] = [];
+    const appliedPromos: string[] = [];
     let error: string | null = null;
 
     // Promo codes logic - NEW CODES ONLY

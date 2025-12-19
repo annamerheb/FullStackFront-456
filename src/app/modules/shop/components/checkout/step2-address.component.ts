@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { selectCartItems } from '../../../../state/cart/cart.selectors';
+import { take } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -26,6 +29,18 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
   template: `
     <div class="min-h-screen containerbg px-4 py-8 checkout-page-enter">
       <div class="mx-auto flex max-w-4xl flex-col gap-6">
+        <!-- Guard redirect notification -->
+        <div
+          *ngIf="showEmptyCartWarning"
+          class="rounded-xl border border-orange-300 bg-orange-50 px-4 py-3 flex items-center gap-3"
+        >
+          <mat-icon class="text-orange-600">warning</mat-icon>
+          <div class="text-sm text-orange-700">
+            <p class="font-semibold">Cannot skip to address</p>
+            <p>Please go to checkout summary first or add items to your cart</p>
+          </div>
+        </div>
+
         <div
           class="flex flex-col gap-6 rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm"
         >
@@ -135,13 +150,16 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
     `,
   ],
 })
-export class CheckoutAddressComponent {
+export class CheckoutAddressComponent implements OnInit {
   addressForm: FormGroup;
+  showEmptyCartWarning = false;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private store: Store,
   ) {
     this.addressForm = this.fb.group({
       fullName: ['', Validators.required],
@@ -150,6 +168,15 @@ export class CheckoutAddressComponent {
       city: ['', Validators.required],
       state: ['', Validators.required],
       zipCode: ['', Validators.required],
+    });
+  }
+
+  ngOnInit(): void {
+    // Check if redirected due to empty cart
+    this.route.queryParams.pipe(take(1)).subscribe((params) => {
+      if (params['reason'] === 'empty-cart') {
+        this.showEmptyCartWarning = true;
+      }
     });
   }
 

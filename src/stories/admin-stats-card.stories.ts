@@ -55,10 +55,10 @@ import { ActivatedRoute } from '@angular/router';
   `,
 })
 class AdminStatsCardStoryComponent {
-  @Input() value: number = 0;
-  @Input() label: string = 'Metric';
-  @Input() icon: string = 'shopping_cart';
-  @Input() trend: number = 0;
+  @Input() value = 0;
+  @Input() label = 'Metric';
+  @Input() icon = 'shopping_cart';
+  @Input() trend = 0;
   @Output() clicked = new EventEmitter<void>();
 
   Math = Math;

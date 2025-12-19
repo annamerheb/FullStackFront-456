@@ -90,9 +90,9 @@ import { RouterLink } from '@angular/router';
 export class DevReviewsComponent implements OnInit {
   getResponse: any = null;
   postResponse: any = null;
-  getError: string = '';
-  postError: string = '';
-  lastRequest: string = '';
+  getError = '';
+  postError = '';
+  lastRequest = '';
 
   constructor(private http: HttpClient) {}
 

@@ -76,7 +76,7 @@ export class ProductsEffects {
 
     console.log('Fetching products with filters:', { page, pageSize, minRating, ordering });
 
-    let rows = products
+    const rows = products
       .map((p: any) => ({
         id: p.id,
         name: p.name,

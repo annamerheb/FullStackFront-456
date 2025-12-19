@@ -249,7 +249,32 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
         </div>
 
         <!-- Loading State - Skeleton Loader -->
-        <app-product-details-skeleton *ngIf="!product"></app-product-details-skeleton>
+        <app-product-details-skeleton
+          *ngIf="isLoading && !errorMessage"
+        ></app-product-details-skeleton>
+
+        <!-- Error State -->
+        <div
+          *ngIf="errorMessage"
+          class="mb-6 rounded-xl border-2 border-red-300 bg-red-50 px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
+          <div class="flex items-center gap-3">
+            <mat-icon class="text-red-600 text-2xl">error_outline</mat-icon>
+            <div>
+              <p class="font-semibold text-red-900">Failed to load product</p>
+              <p class="text-red-700 text-sm mt-1">{{ errorMessage }}</p>
+            </div>
+          </div>
+          <button
+            mat-raised-button
+            (click)="retryLoadProduct()"
+            color="warn"
+            class="flex-shrink-0 !rounded-lg !font-semibold"
+          >
+            <mat-icon class="text-sm mr-1">refresh</mat-icon>
+            Try Again
+          </button>
+        </div>
 
         <!-- Reviews Section -->
         <app-reviews-section *ngIf="product" [productId]="product.id"></app-reviews-section>
@@ -287,6 +312,7 @@ import { isInStock, getStockStatus, StockStatus } from '../../../../services/sto
 export class ProductDetailsPageComponent implements OnInit, OnDestroy {
   product: Product | null = null;
   isLoading = true;
+  errorMessage: string | null = null;
   addToCartForm: FormGroup;
   isInWishlist$!: Observable<boolean>;
   private destroy$ = new Subject<void>();
@@ -319,9 +345,20 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Retry loading the product details
+   */
+  retryLoadProduct() {
+    this.route.params.pipe(take(1)).subscribe((params) => {
+      const productId = +params['id'];
+      this.loadProductDetails(productId);
+    });
+  }
+
   private loadProductDetails(productId: number) {
     this.isLoading = true;
     this.product = null; // Reset product to show skeleton
+    this.errorMessage = null; // Clear any previous errors
     this.cdr.markForCheck();
 
     this.api
@@ -336,6 +373,7 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (product) => {
           this.product = product;
+          this.errorMessage = null;
           // Set max quantity validator based on available stock
           this.addToCartForm
             .get('quantity')
@@ -347,6 +385,10 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Failed to load product:', error);
           this.product = null;
+          this.errorMessage =
+            error?.error?.detail ||
+            error?.message ||
+            'Unable to load product details. Please try again later.';
           this.cdr.markForCheck();
         },
       });

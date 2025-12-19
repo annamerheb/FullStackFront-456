@@ -74,18 +74,20 @@ import { CartSummaryComponent } from '../cart/cart-summary.component';
           <div class="lg:col-span-2">
             <div class="rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm">
               <h2 class="text-lg font-semibold text-slate-900 mb-4">Order Items</h2>
-              <div
-                *ngFor="let item of cartItems$ | async; trackBy: trackByProductId"
-                class="flex justify-between items-center py-4 border-b last:border-b-0"
-              >
-                <div>
-                  <p class="font-medium text-slate-900">{{ item.product.name }}</p>
-                  <p class="text-sm text-slate-600">Qty: {{ item.quantity }}</p>
+              <ng-container *ngIf="cartItems$ | async as items">
+                <div
+                  *ngFor="let item of items; trackBy: trackByProductId"
+                  class="flex justify-between items-center py-4 border-b last:border-b-0"
+                >
+                  <div>
+                    <p class="font-medium text-slate-900">{{ item.product.name }}</p>
+                    <p class="text-sm text-slate-600">Qty: {{ item.quantity }}</p>
+                  </div>
+                  <p class="font-semibold text-slate-900">
+                    {{ formatPrice(getDiscountedPrice(item.product) * item.quantity) }}
+                  </p>
                 </div>
-                <p class="font-semibold text-slate-900">
-                  {{ formatPrice(getDiscountedPrice(item.product) * item.quantity) }}
-                </p>
-              </div>
+              </ng-container>
             </div>
           </div>
 

@@ -15,9 +15,7 @@ interface UserProfile {
   city: string;
 }
 
-interface FormErrors {
-  [key: string]: string | null;
-}
+type FormErrors = Record<string, string | null>;
 
 /**
  * UserProfileForm Component

@@ -137,7 +137,7 @@ interface CheckoutStep {
 })
 class CheckoutStepsStoryComponent {
   @Input() steps: CheckoutStep[] = [];
-  @Input() currentStepIndex: number = 0;
+  @Input() currentStepIndex = 0;
   @Output() stepChanged = new EventEmitter<number>();
   @Output() stepCompleted = new EventEmitter<string>();
   @Output() nextStep = new EventEmitter<number>();

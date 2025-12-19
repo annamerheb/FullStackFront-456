@@ -52,7 +52,7 @@ export const selectRatingError = createSelector(
  * Useful for showing highly-rated products
  * @param minRating - Minimum average rating (default: 3.5)
  */
-export const selectProductsByRating = (minRating: number = 3.5) =>
+export const selectProductsByRating = (minRating = 3.5) =>
   createSelector(selectAllProducts, (products) =>
     products.filter((product) => (product.avgRating || 0) >= minRating),
   );
@@ -89,7 +89,7 @@ export const selectDiscountedProducts = createSelector(selectAllProducts, (produ
  * Alerts for inventory management
  * @param threshold - Stock threshold (default: 5)
  */
-export const selectLowStockProducts = (threshold: number = 5) =>
+export const selectLowStockProducts = (threshold = 5) =>
   createSelector(selectAllProducts, (products) =>
     products.filter((product) => product.stock > 0 && product.stock <= threshold),
   );
