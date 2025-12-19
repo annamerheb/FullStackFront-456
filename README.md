@@ -14,6 +14,16 @@ npm test          # Run unit tests
 
 ---
 
+## ✅ Quality
+
+- **Run tests:** `npm test` (239 unit tests covering reducers, selectors, effects, and components)
+- **Run tests in CI mode:** `npm test -- --watch=false --browsers=ChromeHeadless`
+- **Run lint:** `npm run lint` (ESLint + Prettier for TypeScript and templates)
+- **CI on Pull Request:** GitHub Actions workflow automatically runs `install → lint → tests → build` on every PR to `main`
+- **Docker (bonus):** `docker-compose up` to run the app in a container at http://localhost:4200
+
+---
+
 ## 📋 Project Evolution
 
 ### ✅ **Exo 1 & 2: Foundation (Complete)**
