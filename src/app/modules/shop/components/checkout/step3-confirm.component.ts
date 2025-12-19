@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
@@ -16,11 +16,15 @@ import * as CartActions from '../../../../state/cart/cart.actions';
 import * as UserActions from '../../../../state/user/user.actions';
 import { ShopApiService } from '../../../../services/shop-api.service';
 import { selectUserLoading } from '../../../../state/user/user.selectors';
-import { filter, take } from 'rxjs/operators';
+import { filter, take, map } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 import { CartSummaryComponent } from '../cart/cart-summary.component';
+import { OrderTotalsComponent } from './order-totals.component';
 import { selectDiscountAmount } from '../../../../state/discounts/discounts.selectors';
-import { selectDeliveryOptionCost } from '../../../../state/delivery/delivery.selectors';
+import {
+  selectDeliveryOptionCost,
+  selectSelectedDeliveryOption,
+} from '../../../../state/delivery/delivery.selectors';
 
 @Component({
   standalone: true,
@@ -32,11 +36,34 @@ import { selectDeliveryOptionCost } from '../../../../state/delivery/delivery.se
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    CartSummaryComponent,
+    OrderTotalsComponent,
   ],
   template: `
     <div class="min-h-screen containerbg px-4 py-8 checkout-page-enter">
       <div class="mx-auto flex max-w-4xl flex-col gap-6">
+        <!-- Guard redirect notifications -->
+        <div
+          *ngIf="showEmptyCartWarning"
+          class="rounded-xl border border-red-300 bg-red-50 px-4 py-3 flex items-center gap-3"
+        >
+          <mat-icon class="text-red-600">error_outline</mat-icon>
+          <div class="text-sm text-red-700">
+            <p class="font-semibold">Cannot access confirmation</p>
+            <p>Your cart is empty. Please add items to continue.</p>
+          </div>
+        </div>
+
+        <div
+          *ngIf="showNoAddressWarning"
+          class="rounded-xl border border-orange-300 bg-orange-50 px-4 py-3 flex items-center gap-3"
+        >
+          <mat-icon class="text-orange-600">warning</mat-icon>
+          <div class="text-sm text-orange-700">
+            <p class="font-semibold">Cannot access confirmation</p>
+            <p>Please enter a delivery address first.</p>
+          </div>
+        </div>
+
         <div
           class="flex flex-col gap-6 rounded-2xl border border-slate-200/50 bg-white p-6 shadow-sm"
         >
@@ -111,13 +138,18 @@ import { selectDeliveryOptionCost } from '../../../../state/delivery/delivery.se
 
           <div class="lg:col-span-1">
             <div class="sticky top-4">
-              <app-cart-summary
-                [cart]="{
-                  itemCount: (cartCount$ | async) || 0,
-                  totalPrice: (cartTotal$ | async) || 0,
-                }"
-                [hidePromoAndDelivery]="true"
-              ></app-cart-summary>
+              <app-order-totals
+                *ngIf="orderTotals$ | async as totals"
+                [subtotal]="totals.cartTotal"
+                [discount]="totals.discountAmount"
+                [discountLabel]="totals.appliedCoupon"
+                [subtotalAfterDiscount]="totals.subtotalAfterDiscount"
+                [shipping]="totals.deliveryAmount"
+                [shippingMethod]="totals.deliveryMethod"
+                [tax]="totals.taxAmount"
+                [total]="totals.totalAmount"
+                [itemCount]="totals.itemCount"
+              ></app-order-totals>
 
               <button
                 mat-raised-button
@@ -146,22 +178,65 @@ export class CheckoutConfirmComponent implements OnInit {
   cartItems$: Observable<CartItem[]>;
   cartTotal$: Observable<number>;
   cartCount$: Observable<number>;
+  orderTotals$: Observable<any>;
   address: any;
   private isSubmitting = false;
   loading$: Observable<boolean>;
+  showEmptyCartWarning = false;
+  showNoAddressWarning = false;
 
   constructor(
     private store: Store,
     private router: Router,
     private shopApi: ShopApiService,
+    private route: ActivatedRoute,
   ) {
     this.cartItems$ = this.store.select(selectCartItems);
     this.cartTotal$ = this.store.select(selectCartTotal);
     this.cartCount$ = this.store.select(selectCartCount);
     this.loading$ = this.store.select(selectUserLoading);
+
+    // Create observable for order totals breakdown
+    this.orderTotals$ = combineLatest([
+      this.store.select(selectCartTotal),
+      this.store.select(selectCartCount),
+      this.store.select(selectDiscountAmount),
+      this.store.select(selectDeliveryOptionCost),
+      this.store.select(selectSelectedDeliveryOption),
+    ]).pipe(
+      map(([cartTotal, itemCount, discount, deliveryCost, deliveryOption]) => {
+        const discountAmount = discount || 0;
+        const deliveryAmount = deliveryCost || 0;
+        const subtotalAfterDiscount = Math.max(0, cartTotal - discountAmount);
+        const taxAmount = (subtotalAfterDiscount + deliveryAmount) * 0.08;
+        const totalAmount = subtotalAfterDiscount + deliveryAmount + taxAmount;
+
+        return {
+          cartTotal,
+          itemCount,
+          discountAmount,
+          appliedCoupon:
+            discount && discount > 0 ? `${Math.round((discount / cartTotal) * 100)}% off` : '',
+          subtotalAfterDiscount,
+          deliveryAmount,
+          deliveryMethod: deliveryOption ? deliveryOption.name : 'Standard Delivery',
+          taxAmount,
+          totalAmount,
+        };
+      }),
+    );
   }
 
   ngOnInit() {
+    // Check if redirected due to guard failure
+    this.route.queryParams.pipe(take(1)).subscribe((params) => {
+      if (params['reason'] === 'empty-cart') {
+        this.showEmptyCartWarning = true;
+      } else if (params['reason'] === 'no-address') {
+        this.showNoAddressWarning = true;
+      }
+    });
+
     const savedAddress = sessionStorage.getItem('checkout_address');
     if (savedAddress) {
       this.address = JSON.parse(savedAddress);

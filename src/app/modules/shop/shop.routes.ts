@@ -7,6 +7,7 @@ import { WishlistPageComponent } from './components/wishlist/wishlist-page.compo
 import { CheckoutSummaryComponent } from './components/checkout/step1-summary.component';
 import { CheckoutAddressComponent } from './components/checkout/step2-address.component';
 import { CheckoutConfirmComponent } from './components/checkout/step3-confirm.component';
+import { CheckoutAddressGuard, CheckoutConfirmGuard } from '../../guards/checkout.guard';
 
 export const SHOP_ROUTES: Routes = [
   { path: 'products', component: ProductsPageComponent },
@@ -18,8 +19,8 @@ export const SHOP_ROUTES: Routes = [
     path: 'checkout',
     children: [
       { path: 'summary', component: CheckoutSummaryComponent },
-      { path: 'address', component: CheckoutAddressComponent },
-      { path: 'confirm', component: CheckoutConfirmComponent },
+      { path: 'address', component: CheckoutAddressComponent, canActivate: [CheckoutAddressGuard] },
+      { path: 'confirm', component: CheckoutConfirmComponent, canActivate: [CheckoutConfirmGuard] },
     ],
   },
   { path: '', redirectTo: 'products', pathMatch: 'full' },
