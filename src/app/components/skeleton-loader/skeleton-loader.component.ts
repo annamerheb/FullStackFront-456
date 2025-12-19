@@ -143,7 +143,7 @@ import { CommonModule } from '@angular/common';
   ],
 })
 export class SkeletonLoaderComponent {
-  @Input() count: number = 3;
+  @Input() count = 3;
   @Input() type: 'card' | 'text' | 'table' = 'card';
   get skeletonItems() {
     return Array(this.count).fill(0);

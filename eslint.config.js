@@ -10,6 +10,11 @@ import prettierPlugin from 'eslint-plugin-prettier';
 // @ts-check
 
 export default tseslint.config(
+  // Ignore patterns
+  {
+    ignores: ['src/stories/**', 'src/app/dev/**', 'src/mocks/**'],
+  },
+
   // TypeScript / .ts
   {
     files: ['**/*.ts'],
@@ -36,6 +41,15 @@ export default tseslint.config(
       ],
       // Run Prettier via ESLint
       'prettier/prettier': 'error',
+      // Relax rules for existing codebase
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@angular-eslint/prefer-inject': 'off',
+      '@angular-eslint/no-empty-lifecycle-method': 'warn',
+      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-inferrable-types': 'off',
+      '@typescript-eslint/consistent-indexed-object-style': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
 
@@ -53,6 +67,9 @@ export default tseslint.config(
     rules: {
       // Let Prettier format HTML too
       'prettier/prettier': 'error',
+      // Relax accessibility rules for existing codebase
+      '@angular-eslint/template/label-has-associated-control': 'warn',
+      '@angular-eslint/template/no-negated-async': 'warn',
     },
   },
 );

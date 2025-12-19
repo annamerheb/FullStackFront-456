@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -249,12 +249,12 @@ import { CartItem } from '../../../../state/cart/cart.models';
     `,
   ],
 })
-export class CartItemComponent {
+export class CartItemComponent implements OnInit {
   @Input() item!: CartItem;
   @Output() quantityChanged = new EventEmitter<number>();
   @Output() removed = new EventEmitter<{ productId: number }>();
 
-  quantity: number = 0;
+  quantity = 0;
 
   constructor(private snackBar: MatSnackBar) {}
 

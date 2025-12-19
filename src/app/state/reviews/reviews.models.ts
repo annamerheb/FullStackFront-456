@@ -9,7 +9,7 @@ export interface Review {
 }
 
 export interface ReviewsState {
-  byProductId: { [productId: number]: Review[] };
+  byProductId: Record<number, Review[]>;
   loading: boolean;
   error: string | null;
 }

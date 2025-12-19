@@ -84,8 +84,8 @@ export class ProductCardComponent implements Product, OnInit {
   @Input() avgRating!: number;
   @Input() id!: number;
   @Input() image?: string;
-  @Input() stock: number = 0;
-  @Input() lowStockThreshold: number = 0;
+  @Input() stock = 0;
+  @Input() lowStockThreshold = 0;
 
   isInWishlist$!: Observable<boolean>;
   StockStatus = StockStatus;

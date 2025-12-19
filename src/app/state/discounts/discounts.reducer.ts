@@ -6,7 +6,7 @@ export interface DiscountsState {
   appliedCoupon: Coupon | null;
   discountAmount: number;
   error: string | null;
-  productDiscounts: { [productId: number]: number };
+  productDiscounts: Record<number, number>;
 }
 
 const initialState: DiscountsState = {

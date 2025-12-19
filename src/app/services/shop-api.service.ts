@@ -91,9 +91,9 @@ export class ShopApiService {
     return this.http.patch<UserProfileResponse>(url, userUpdate);
   }
 
-  getUserOrders(page: number = 1, pageSize: number = 10): Observable<OrdersListResponse> {
+  getUserOrders(page = 1, pageSize = 10): Observable<OrdersListResponse> {
     const url = `${this.baseUrl}/user/orders/`;
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
 
@@ -119,9 +119,9 @@ export class ShopApiService {
     return this.http.patch<UserResponse>(url, userUpdate);
   }
 
-  getMyOrders(page: number = 1, pageSize: number = 10): Observable<OrdersListResponse> {
+  getMyOrders(page = 1, pageSize = 10): Observable<OrdersListResponse> {
     const url = `${this.baseUrl}/me/orders/`;
-    let params = new HttpParams()
+    const params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
 

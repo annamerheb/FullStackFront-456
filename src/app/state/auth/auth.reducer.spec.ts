@@ -143,10 +143,7 @@ describe('Auth Reducer', () => {
     });
 
     it('should replace error message on subsequent failures', () => {
-      let state = authReducer(
-        initialAuthState,
-        AuthActions.loginFailure({ error: 'First error' }),
-      );
+      let state = authReducer(initialAuthState, AuthActions.loginFailure({ error: 'First error' }));
 
       expect(state.error).toBe('First error');
 
@@ -341,16 +338,10 @@ describe('Auth Reducer', () => {
       expect(state.loading).toBe(false);
       expect(state.access).toBeNull();
 
-      state = authReducer(
-        state,
-        AuthActions.login({ username: 'testuser', password: 'pass' }),
-      );
+      state = authReducer(state, AuthActions.login({ username: 'testuser', password: 'pass' }));
       expect(state.loading).toBe(true);
 
-      state = authReducer(
-        state,
-        AuthActions.loginSuccess({ access: 'token', refresh: 'refresh' }),
-      );
+      state = authReducer(state, AuthActions.loginSuccess({ access: 'token', refresh: 'refresh' }));
       expect(state.loading).toBe(false);
       expect(state.access).toBe('token');
 
@@ -367,16 +358,10 @@ describe('Auth Reducer', () => {
       expect(state.error).toBe('Network error');
       expect(state.access).toBeNull();
 
-      state = authReducer(
-        state,
-        AuthActions.login({ username: 'testuser', password: 'pass' }),
-      );
+      state = authReducer(state, AuthActions.login({ username: 'testuser', password: 'pass' }));
       expect(state.loading).toBe(true);
 
-      state = authReducer(
-        state,
-        AuthActions.loginSuccess({ access: 'token', refresh: 'refresh' }),
-      );
+      state = authReducer(state, AuthActions.loginSuccess({ access: 'token', refresh: 'refresh' }));
       expect(state.error).toBeNull();
       expect(state.access).toBe('token');
     });
@@ -390,10 +375,7 @@ describe('Auth Reducer', () => {
       state = authReducer(state, AuthActions.refreshToken({ refreshToken: 'refresh' }));
       expect(state.loading).toBe(true);
 
-      state = authReducer(
-        state,
-        AuthActions.refreshTokenSuccess({ access: 'new_token' }),
-      );
+      state = authReducer(state, AuthActions.refreshTokenSuccess({ access: 'new_token' }));
       expect(state.loading).toBe(false);
       expect(state.access).toBe('new_token');
       expect(state.refresh).toBe('refresh');

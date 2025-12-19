@@ -86,9 +86,9 @@ import { MatCardModule } from '@angular/material/card';
 export class DevWishlistComponent implements OnInit {
   getResponse: any = null;
   postResponse: any = null;
-  getError: string = '';
-  postError: string = '';
-  lastRequest: string = '';
+  getError = '';
+  postError = '';
+  lastRequest = '';
 
   constructor(private http: HttpClient) {}
 

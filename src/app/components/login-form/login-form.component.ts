@@ -190,7 +190,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class LoginFormComponent {
   @Input() loading = (): boolean => false;
   @Input() error = (): string | null => null;
-  @Output() submit = new EventEmitter<{ username: string; password: string }>();
+  @Output() formSubmit = new EventEmitter<{ username: string; password: string }>();
 
   loginForm: FormGroup;
 
@@ -203,7 +203,7 @@ export class LoginFormComponent {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      this.submit.emit(this.loginForm.value);
+      this.formSubmit.emit(this.loginForm.value);
     } else {
       this.loginForm.markAllAsTouched();
     }

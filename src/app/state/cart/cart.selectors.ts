@@ -93,7 +93,7 @@ export const selectCartSummary = createSelector(
  * Useful for highlighting premium items
  * @param threshold - Price threshold (default: 100)
  */
-export const selectHighValueCartItems = (threshold: number = 100) =>
+export const selectHighValueCartItems = (threshold = 100) =>
   createSelector(selectCartItems, (items) =>
     items.filter((item) => item.product.price >= threshold),
   );

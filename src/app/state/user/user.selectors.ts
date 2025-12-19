@@ -76,7 +76,7 @@ export const selectOrderStatistics = createSelector(selectOrders, (orders) => {
  * Useful for dashboard or account homepage
  * @param limit - Number of recent orders to return (default: 5)
  */
-export const selectRecentOrders = (limit: number = 5) =>
+export const selectRecentOrders = (limit = 5) =>
   createSelector(selectOrders, (orders) =>
     [...orders]
       .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
@@ -88,7 +88,7 @@ export const selectRecentOrders = (limit: number = 5) =>
  * Identifies premium customer purchases
  * @param threshold - Minimum order value (default: 500)
  */
-export const selectHighValueOrders = (threshold: number = 500) =>
+export const selectHighValueOrders = (threshold = 500) =>
   createSelector(selectOrders, (orders) => orders.filter((order) => order.totalPrice >= threshold));
 
 /**

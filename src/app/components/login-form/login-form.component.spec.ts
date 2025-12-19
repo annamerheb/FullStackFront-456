@@ -32,7 +32,7 @@ describe('LoginFormComponent', () => {
     });
 
     it('should have submit EventEmitter', () => {
-      expect(component.submit).toBeDefined();
+      expect(component.formSubmit).toBeDefined();
     });
   });
 
@@ -126,7 +126,7 @@ describe('LoginFormComponent', () => {
 
   describe('Form Submission', () => {
     it('should emit submit event with form values when valid', () => {
-      const submitSpy = spyOn(component.submit, 'emit');
+      const submitSpy = spyOn(component.formSubmit, 'emit');
 
       component.loginForm.get('username')?.setValue('testuser');
       component.loginForm.get('password')?.setValue('testpass');
@@ -140,7 +140,7 @@ describe('LoginFormComponent', () => {
     });
 
     it('should not emit submit event when form is invalid', () => {
-      const submitSpy = spyOn(component.submit, 'emit');
+      const submitSpy = spyOn(component.formSubmit, 'emit');
 
       component.loginForm.get('username')?.setValue('');
       component.loginForm.get('password')?.setValue('');
@@ -161,7 +161,7 @@ describe('LoginFormComponent', () => {
     });
 
     it('should emit on form ngSubmit', () => {
-      const submitSpy = spyOn(component.submit, 'emit');
+      const submitSpy = spyOn(component.formSubmit, 'emit');
 
       component.loginForm.get('username')?.setValue('user');
       component.loginForm.get('password')?.setValue('pass');
@@ -326,7 +326,7 @@ describe('LoginFormComponent', () => {
     });
 
     it('should handle special characters in credentials', () => {
-      const submitSpy = spyOn(component.submit, 'emit');
+      const submitSpy = spyOn(component.formSubmit, 'emit');
 
       component.loginForm.get('username')?.setValue('user@domain.com');
       component.loginForm.get('password')?.setValue('P@ssw0rd!#$%');
