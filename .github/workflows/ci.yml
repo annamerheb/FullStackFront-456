@@ -19,6 +19,6 @@ jobs:
         run: npm run lint --if-present
         continue-on-error: true
       - name: Unit tests
-        run: npm test -- --watch=false
+        run: npm test -- --watch=false --browsers=ChromeHeadless
       - name: Build
         run: npm run build
