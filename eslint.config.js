@@ -1,18 +1,18 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-import storybook from "eslint-plugin-storybook";
+import storybook from 'eslint-plugin-storybook';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import angular from 'angular-eslint';
+import prettierConfig from 'eslint-config-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 // eslint.config.js
 // @ts-check
-const eslint = require("@eslint/js");
-const tseslint = require("typescript-eslint");
-const angular = require("angular-eslint");
-const prettierConfig = require("eslint-config-prettier");
-const prettierPlugin = require("eslint-plugin-prettier");
 
-module.exports = tseslint.config(
+export default tseslint.config(
   // TypeScript / .ts
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,
       ...tseslint.configs.recommended,
@@ -26,22 +26,22 @@ module.exports = tseslint.config(
     },
     rules: {
       // Angular selector rules (yours)
-      "@angular-eslint/directive-selector": [
-        "error",
-        { type: "attribute", prefix: "app", style: "camelCase" },
+      '@angular-eslint/directive-selector': [
+        'error',
+        { type: 'attribute', prefix: 'app', style: 'camelCase' },
       ],
-      "@angular-eslint/component-selector": [
-        "error",
-        { type: "element", prefix: "app", style: "kebab-case" },
+      '@angular-eslint/component-selector': [
+        'error',
+        { type: 'element', prefix: 'app', style: 'kebab-case' },
       ],
       // Run Prettier via ESLint
-      "prettier/prettier": "error",
+      'prettier/prettier': 'error',
     },
   },
 
   // Templates / .html
   {
-    files: ["**/*.html"],
+    files: ['**/*.html'],
     extends: [
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility,
@@ -52,7 +52,7 @@ module.exports = tseslint.config(
     },
     rules: {
       // Let Prettier format HTML too
-      "prettier/prettier": "error",
+      'prettier/prettier': 'error',
     },
-  }
+  },
 );
